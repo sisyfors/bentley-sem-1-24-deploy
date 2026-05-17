@@ -1,9 +1,25 @@
 {
+  "dependencies": {
+    "cors": "^2.8.6",
+    "ejs": "^5.0.2",
+    "express": "^5.2.1",
+    "mongoose": "^9.6.2",
+    "node.js": "^0.0.1-security",
+    "pug": "^3.0.4"
+  },
+  "scripts": {
+    "dev": "nodemon app.js",
+    "start": "node app.js"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14",
+    "@playwright/test": "^1.60.0",
+    "@types/node": "^25.8.0"
+  },
   "name": "bentley-sem-1-24",
   "version": "1.0.0",
   "description": "**Edit a file, create a new file, and clone from Bitbucket in under 2 minutes**",
   "main": "index.js",
-  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://josiahwb-admin@bitbucket.org/curtincomputingprojects/bentley-sem-1-24.git"
@@ -15,9 +31,5 @@
   "bugs": {
     "url": "https://bitbucket.org/curtincomputingprojects/bentley-sem-1-24/issues"
   },
-  "homepage": "https://bitbucket.org/curtincomputingprojects/bentley-sem-1-24#readme",
-  "devDependencies": {
-    "@playwright/test": "^1.60.0",
-    "@types/node": "^25.8.0"
-  }
+  "homepage": "https://bitbucket.org/curtincomputingprojects/bentley-sem-1-24#readme"
 }
