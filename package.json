@@ -12,6 +12,24 @@
     "start": "node app.js"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
-  }
+    "nodemon": "^3.1.14",
+    "@playwright/test": "^1.60.0",
+    "@types/node": "^25.8.0"
+  },
+  "name": "bentley-sem-1-24",
+  "version": "1.0.0",
+  "description": "**Edit a file, create a new file, and clone from Bitbucket in under 2 minutes**",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://josiahwb-admin@bitbucket.org/curtincomputingprojects/bentley-sem-1-24.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://bitbucket.org/curtincomputingprojects/bentley-sem-1-24/issues"
+  },
+  "homepage": "https://bitbucket.org/curtincomputingprojects/bentley-sem-1-24#readme"
 }
