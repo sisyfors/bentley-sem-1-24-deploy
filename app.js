@@ -56,7 +56,7 @@ app.post('/auth/setup/', async (req, res) => {
         var newPassword = randomstring.generate(12);
         const salt = randomstring.generate(16);
         
-        sendPasswordEmail(email, newPassword);
+        await sendPasswordEmail(email, newPassword);
 
         const securePassword = argon2.hash(salt + newPassword);
 
@@ -66,6 +66,7 @@ app.post('/auth/setup/', async (req, res) => {
 
                 UCs.create({
                     email: email,
+                    username: email,
                     password: securePassword,
                     salt: salt,
                 });
@@ -75,11 +76,28 @@ app.post('/auth/setup/', async (req, res) => {
 
                 Students.create({
                     email: email,
+                    username: email,
                     password: securePassword,
                     salt: salt,
                 });
                 break;
         }
+    }
+});
+
+app.post('/auth/login/', async (req, res) => {
+    console.log(req.body); // proves backend received data
+    const { username, password, type } = req.body;
+    
+    // find account with that username
+    // error if not found
+
+    // two parameters: hashed password; salt + password
+    if (argon2.verify()) {
+        // generate session token
+    } 
+    else {
+        // error
     }
 });
 
