@@ -3,6 +3,7 @@ const cors = require('cors');
 const app = express();
 const randomstring = require('randomstring');
 const mongoose = require('mongoose');
+const argon2 = require('argon2');
 
 app.use(express.json());
 app.use(cors());
@@ -19,18 +20,20 @@ app.post('/auth/setup/', async (req, res) => {
         res.status(403).send('Non-Staff email address');
     } 
     else {
-        var newPassword = randomstring.generate();
+        var newPassword = randomstring.generate(12);
+        const salt = randomstring.generate(8);
+        
         // email generated password
 
-        // hash password
-        
+        const securePassword = argon2.hash(salt + newPassword);
+
         switch (type) {
             case 'staff':
                 const UCs = mongoose.model('UCs', UCAccountSchema);
 
                 UCs.create({
                     email: email,
-                    password: newPassword,
+                    password: securePassword,
                     salt: salt,
                 });
                 break;
@@ -39,7 +42,7 @@ app.post('/auth/setup/', async (req, res) => {
 
                 Students.create({
                     email: email,
-                    password: newPassword,
+                    password: securePassword,
                     salt: salt,
                 });
                 break;
