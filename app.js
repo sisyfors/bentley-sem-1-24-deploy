@@ -2,32 +2,23 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 
-app.set('view engine', 'pug');
-
 app.use(express.json());
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 
-app.get('/', (req, res) => {
-    res.render('login');
-});
-
-app.post('/login', async (req, res) => {
-    console.log(req.body); // proves backend recived data
-    const { username, password } = req.body;
-    const user = 
-    {
-        username: 'admin',
-        password: '1234'
-    };
-
-    if (username === user.username && password === user.password)
-    {
-        res.send('Login successful');
+app.post('/auth/setup', async (req, res) => {
+    console.log(req.body); // proves backend received data
+    const { email, type } = req.body;
+    
+    if (!(email.endsWith('@student.curtin.edu.au') || email.endsWith('@curtin.edu.au'))) {
+        res.status(403).send('Non-Curtin email address');
     } 
-    else 
-    {
-        res.send('Invalid username or password');
+    else if (type === 'staff' && !email.endsWith('@curtin.edu.au')) {
+        res.status(403).send('Non-Staff email address');
+    } 
+    else {
+        // send email temporary password
+        // store temporary password
     }
 });
 
