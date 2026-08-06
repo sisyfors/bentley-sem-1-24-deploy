@@ -1,0 +1,37 @@
+.dropdown {
+  position: relative;
+}
+
+.dropdown button {
+  width: 100%;
+  text-align: left;
+  padding: 15px;
+  background-color: #000000;
+  color: rgb(142, 142, 142);
+  border: none;
+  padding: 15px;
+}
+.dropdown button:hover {
+  background: #374151;
+  border-radius: 8px;
+  
+}
+
+.dropdown-content a {
+  display: block;
+  font-size: 15px;
+  padding: 3px 30px;
+  margin-bottom: 0px;
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+}
+
+.dropdown-content a:hover {
+  background: #374151;
+}
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+}
