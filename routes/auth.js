@@ -41,6 +41,38 @@ const sendPasswordEmail = async (to, password) => {
   }
 };
 
+const sendOTPEmail = async (to, otp) => {
+  try {
+    // Creates a connection to the email server
+    // TODO: Must create email account and fill in details
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: process.env.SMTP_PORT,
+      secure: true,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
+
+    // TODO: Create an html template later
+    const emailContent = {
+      from: process.env.FROM_EMAIL,
+      to: to,
+      subject: 'OTP Code',
+      text: `Here is your one-time-password: ${otp}`,
+    };
+
+    // Send the email
+    const info = await transporter.sendMail(emailContent);
+    console.log('Email sent:', info.messageId);
+  } 
+  catch (error) {
+    console.error('Error sending email:', error);
+    throw error;
+  }
+};
+
 router.post('/setup/', async (req, res) => {
     console.log(req.body); // proves backend received data
     const { email, type } = req.body;
@@ -89,17 +121,17 @@ router.post('/login/', async (req, res) => {
     const { username, password, type } = req.body;
     
     switch (type) {
-            case 'staff':
-                const UCs = mongoose.model('UCs', UCAccountSchema);
+        case 'staff':
+            const UCs = mongoose.model('UCs', UCAccountSchema);
 
-                const account = await UCs.findOne({username: username}).exec();
-                break;
-            case 'student':
-                const Students = mongoose.model('Students', studentSchema);
+            const account = await UCs.findOne({username: username}).exec();
+            break;
+        case 'student':
+            const Students = mongoose.model('Students', studentSchema);
 
-                const account = await Students.findOne({username: username}).exec();
-                break;
-        }
+            const account = await Students.findOne({username: username}).exec();
+            break;
+    }
 
     if (account)
     {
@@ -116,5 +148,41 @@ router.post('/login/', async (req, res) => {
         res.status(403).send('Username not found');
     }
 });
+
+router.post('/otp/', async (req, res) => {
+    console.log(req.body); // proves backend received data
+    const { username, otp, type } = req.body;
+    
+    switch (type) {
+        case 'staff':
+            const UCs = mongoose.model('UCs', UCAccountSchema);
+
+            const account = await UCs.findOne({username: username}).exec();
+            break;
+        case 'student':
+            const Students = mongoose.model('Students', studentSchema);
+
+            const account = await Students.findOne({username: username}).exec();
+            break;
+    }
+
+    if (account)
+    {
+        if (account.otp === otp) {
+            account.otp = null;
+            await account.save();
+
+            // generate session token
+        } 
+        else {
+            res.status(403).send('Incorrect OTP');
+        }
+    } 
+    else {
+        res.status(403).send('Username not found');
+    }
+});
+
+
 
 module.exports = router;
