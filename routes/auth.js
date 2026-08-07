@@ -183,6 +183,38 @@ router.post('/otp/', async (req, res) => {
     }
 });
 
+router.post('/email/', async (req, res) => {
+    console.log(req.body); // proves backend received data
+    // from user session + body
+    const { newEmail, username, type } = req.body;
+    
+    switch (type) {
+        case 'staff':
+            const UCs = mongoose.model('UCs', UCAccountSchema);
 
+            const account = await UCs.findOne({username: username}).exec();
+            break;
+        case 'student':
+            const Students = mongoose.model('Students', studentSchema);
+
+            const account = await Students.findOne({username: username}).exec();
+            break;
+    }
+
+    if (account)
+    {
+        account.email = newEmail;
+
+        var OTP = randomstring.generate({length: 5, charset: 'numeric'});
+        
+        await sendOTPEmail(newEmail, OTP);
+
+        // store OTP in schema, then delete once log-in is successful
+        // OTP necessary to verify email, otherwise Curtin email is used, though new email is stored
+    } 
+    else {
+        res.status(403).send('Username not found');
+    }
+});
 
 module.exports = router;
