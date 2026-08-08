@@ -70,3 +70,9 @@
   font-size: 15px;
   margin-top: 10px;
 }
+
+.form-box .message {
+  color: green;
+  font-size: 15px bold;
+  margin-top: 10px;
+}

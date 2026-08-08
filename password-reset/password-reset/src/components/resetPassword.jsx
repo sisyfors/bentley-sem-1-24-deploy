@@ -3,31 +3,42 @@ import { useState } from "react";
 import Curtin_University from "../assets/Curtin_University.png";
 
 function ResetPassword() {
+
     const [error, setError] = useState("");
-    const [details, setDetails] = useState({
-        newPassword: "",
-        confirmPassword: ""
-    });
+    const [message, setMessage] = useState("");
 
-    const inputChanges = (e) => {
-        const { name, value } = e.target;
+    const [password, setPassword] = useState("");
+    const [reconfirmPassword, setReconfirmPassword] = useState("");
 
-        setDetails(prevDetails => ({
-            ...prevDetails, 
-            [name]: value
-        }));
-    };
-
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (details.newPassword !== details.confirmPassword) {
-            setError("Passwords do not match. Please re-enter your new password.");
-            return;
-        }
-
         setError("");
-        alert("Password reset successful!");
+        setMessage("");
+
+        const response = await fetch(
+            'http://localhost:3000/auth/resetPassword',
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    password: password,
+                    reconfirmPassword: reconfirmPassword
+                })
+            }
+        );
+
+        const data = await response.json();
+        if(!response.ok) {
+            setError(data.message);
+            setMessage("");
+        }
+        else {
+            setMessage(data.message);
+            setError("");
+        }
     };
 
     return(
@@ -46,8 +57,8 @@ function ResetPassword() {
                     <input 
                         type="password"
                         name="newPassword"
-                        value={details.newPassword}
-                        onChange={inputChanges}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
                         placeholder="new password"
                     />
 
@@ -55,8 +66,8 @@ function ResetPassword() {
                     <input 
                         type="password"
                         name="confirmPassword"
-                        value={details.confirmPassword}
-                        onChange={inputChanges}
+                        value={reconfirmPassword}
+                        onChange={(e) => setReconfirmPassword(e.target.value)}
                         placeholder="re-enter new password"
                     />
 
@@ -69,6 +80,10 @@ function ResetPassword() {
                             {error}
                         </p>)}
 
+                    {message && (
+                        <p className="message">
+                            {message}
+                        </p>)}
                 </form>
             </div>
         </div>
