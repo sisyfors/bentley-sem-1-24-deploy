@@ -1,6 +1,5 @@
 /* reset password */
 import { useState } from "react";
-import Curtin_University from "../assets/Curtin_University.png";
 
 function ResetPassword() {
 
@@ -45,7 +44,6 @@ function ResetPassword() {
         <div className="form-container">
             <div className="form-box">
                 <form onSubmit={handleSubmit}>
-                    <img src={Curtin_University} alt="Curtin University" className="logo" />
                     <h1>
                         Reset your Password
                     </h1>
