@@ -1,7 +1,6 @@
 // This screen presents the Units a student is enrolled into
 
 import './StudentUnitPage.css';
-import curtinlogo from '../assets/curtinlogo.png'
 import notification from '../assets/notification.png'
 
 function StudentUnitPage() {
@@ -20,11 +19,8 @@ function StudentUnitPage() {
         <div className="content">
             <div className="header">
                 <span className="page-title">Units</span>
-                <div className="curtinlogo">
-                    <img src={curtinlogo} alt="Curtin Logo" className="curtinlogoimg"/>
                     <div className="bell-icon">
                     <img src={notification} alt="Notif logo" className="notiflogoimg"/>
-                    </div>
                 </div> 
             </div>
             <div className="grid">

@@ -1,7 +1,6 @@
 // This screen showcases the landing page/main page of the Student Dashboard, adapted from Amelia's original design to be consistent with the UC Dashboard design 
 
 import './StudentDashboardUI.css';
-import curtinlogo from '../assets/curtinlogo.png'
 import notification from '../assets/notification.png'
 
 function StudentDashboardUI() {
@@ -20,11 +19,8 @@ function StudentDashboardUI() {
         <div className="content">
             <div className="header">
                 <span className="page-title"></span>
-                <div className="curtinlogo">
-                    <img src={curtinlogo} alt="Curtin Logo" className="curtinlogoimg"/>
                     <div className="bell-icon">
                     <img src={notification} alt="Notif logo" className="notiflogoimg"/>
-                    </div>
                 </div> 
             </div>                
             <div className="grid">

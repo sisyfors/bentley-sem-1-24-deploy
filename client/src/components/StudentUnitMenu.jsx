@@ -1,7 +1,6 @@
 // This screen showcases the unit menu items upon selecting a unit
 
 import './StudentUnitMenu.css';
-import curtinlogo from '../assets/curtinlogo.png'
 import notification from '../assets/notification.png'
 
 function StudentUnitMenu() {
@@ -21,11 +20,8 @@ function StudentUnitMenu() {
             <div className="header">
                 {/* Sample Unit page - needs optimization */}
                 <span className="page-title">Capstone Computing Project 1 | ISAD3000</span>
-                <div className="curtinlogo">
-                    <img src={curtinlogo} alt="Curtin Logo" className="curtinlogoimg"/>
                     <div className="bell-icon">
                     <img src={notification} alt="Notif logo" className="notiflogoimg"/>
-                    </div>
                 </div> 
             </div>
             <div className="unitmenu">
