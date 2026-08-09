@@ -1,8 +1,10 @@
-import './StudentDashboardUI.css';
+// This screen showcases the unit menu items upon selecting a unit
+
+import './StudentUnitMenu.css';
 import curtinlogo from '../assets/curtinlogo.png'
 import notification from '../assets/notification.png'
 
-function StudentDashboardUI() {
+function StudentUnitMenu() {
 
     return (
 
@@ -17,27 +19,29 @@ function StudentDashboardUI() {
         </div>
         <div className="content">
             <div className="header">
-                <span className="page-title"></span>
+                {/* Sample Unit page - needs optimization */}
+                <span className="page-title">Capstone Computing Project 1 | ISAD3000</span>
                 <div className="curtinlogo">
                     <img src={curtinlogo} alt="Curtin Logo" className="curtinlogoimg"/>
                     <div className="bell-icon">
                     <img src={notification} alt="Notif logo" className="notiflogoimg"/>
                     </div>
                 </div> 
-            </div>                
-            <div className="grid">
-                <button className="grid-box">Planner</button>
-                <button className="grid-box">Units</button>
-                <button className="grid-box">Assessments</button>
-                <button className="grid-box">Progress</button>
-                <button className="grid-box">Discover Events</button>
-                <button className="grid-box">Settings</button>
             </div>
-            </div>
-        </div>
+            <div className="unitmenu">
+                <button className="menuitem">Announcements</button>
+                <button className="menuitem">iLecture</button>
+                <button className="menuitem">Unit Information</button>
+                <button className="menuitem">Calender</button>
+                <button className="menuitem">Unit Materials</button>
+                <button className="menuitem">Assessments</button>
+                <button className="menuitem">Allocated Group</button>
+                <button className="menuitem">Application</button>  
+                </div>
+                </div>
+            </div> 
 
     );
 }
 
-export default StudentDashboardUI;
-
+export default StudentUnitMenu;
