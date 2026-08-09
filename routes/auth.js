@@ -77,11 +77,29 @@ router.post('/setup/', async (req, res) => {
     console.log(req.body); // proves backend received data
     const { email, type } = req.body;
     
-    if (!(email.endsWith('@student.curtin.edu.au') || email.endsWith('@curtin.edu.au'))) {
-        res.status(403).send('Non-Curtin email address');
+    var account = null;
+
+    switch (type) {
+        case 'staff':
+            const UCs = mongoose.model('UCs', UCAccountSchema);
+
+            account = await UCs.findOne({username: email}).exec();
+            break;
+        case 'student':
+            const Students = mongoose.model('Students', studentSchema);
+
+            account = await Students.findOne({username: email}).exec();
+            break;
+    }
+
+    if (account) {
+        res.status(401).send('Account already exists.');
+    }
+    else if (!(email.endsWith('@student.curtin.edu.au') || email.endsWith('@curtin.edu.au'))) {
+        res.status(401).send('Non-Curtin email address');
     } 
     else if (type === 'staff' && !email.endsWith('@curtin.edu.au')) {
-        res.status(403).send('Staff must have staff email address');
+        res.status(401).send('Staff must have staff email address');
     } 
     else {
         var newPassword = randomstring.generate(12);
@@ -91,11 +109,13 @@ router.post('/setup/', async (req, res) => {
 
         const securePassword = argon2.hash(salt + newPassword);
 
+        var createdAccount = null;
+
         switch (type) {
             case 'staff':
                 const UCs = mongoose.model('UCs', UCAccountSchema);
 
-                await UCs.create({
+                createdAccount = await UCs.create({
                     email: email,
                     username: email,
                     password: securePassword,
@@ -105,7 +125,7 @@ router.post('/setup/', async (req, res) => {
             case 'student':
                 const Students = mongoose.model('Students', studentSchema);
 
-                await Students.create({
+                createdAccount = await Students.create({
                     email: email,
                     username: email,
                     password: securePassword,
@@ -113,6 +133,8 @@ router.post('/setup/', async (req, res) => {
                 });
                 break;
         }
+
+        res.status(201).json(createdAccount);
     }
 });
 
@@ -120,16 +142,18 @@ router.post('/login/', async (req, res) => {
     console.log(req.body); // proves backend received data
     const { username, password, type } = req.body;
     
+    var account = null;
+
     switch (type) {
         case 'staff':
             const UCs = mongoose.model('UCs', UCAccountSchema);
 
-            const account = await UCs.findOne({username: username}).exec();
+            account = await UCs.findOne({username: username}).exec();
             break;
         case 'student':
             const Students = mongoose.model('Students', studentSchema);
 
-            const account = await Students.findOne({username: username}).exec();
+            account = await Students.findOne({username: username}).exec();
             break;
     }
 
@@ -139,13 +163,14 @@ router.post('/login/', async (req, res) => {
 
         if (argon2.verify(account.password, saltedPassword)) {
             // generate session token
+            res.sendStatus(200);
         } 
         else {
-            res.status(403).send('Incorrect password');
+            res.status(401).send('Incorrect password');
         }
     } 
     else {
-        res.status(403).send('Username not found');
+        res.status(401).send('Username not found');
     }
 });
 
@@ -153,16 +178,18 @@ router.post('/otp/', async (req, res) => {
     console.log(req.body); // proves backend received data
     const { username, otp, type } = req.body;
     
+    var account = null;
+
     switch (type) {
         case 'staff':
             const UCs = mongoose.model('UCs', UCAccountSchema);
 
-            const account = await UCs.findOne({username: username}).exec();
+            account = await UCs.findOne({username: username}).exec();
             break;
         case 'student':
             const Students = mongoose.model('Students', studentSchema);
 
-            const account = await Students.findOne({username: username}).exec();
+            account = await Students.findOne({username: username}).exec();
             break;
     }
 
@@ -173,13 +200,14 @@ router.post('/otp/', async (req, res) => {
             await account.save();
 
             // generate session token
+            res.sendStatus(200);
         } 
         else {
-            res.status(403).send('Incorrect OTP');
+            res.status(401).send('Incorrect OTP');
         }
     } 
     else {
-        res.status(403).send('Username not found');
+        res.status(401).send('Username not found');
     }
 });
 
@@ -187,17 +215,19 @@ router.post('/email/', async (req, res) => {
     console.log(req.body); // proves backend received data
     // from user session + body
     const { newEmail, username, type } = req.body;
-    
+
+    var account = null;
+
     switch (type) {
         case 'staff':
             const UCs = mongoose.model('UCs', UCAccountSchema);
 
-            const account = await UCs.findOne({username: username}).exec();
+            account = await UCs.findOne({username: username}).exec();
             break;
         case 'student':
             const Students = mongoose.model('Students', studentSchema);
 
-            const account = await Students.findOne({username: username}).exec();
+            account = await Students.findOne({username: username}).exec();
             break;
     }
 
@@ -211,9 +241,10 @@ router.post('/email/', async (req, res) => {
 
         // store OTP in schema, then delete once log-in is successful
         // OTP necessary to verify email, otherwise Curtin email is used, though new email is stored
+        res.sendStatus(200);
     } 
     else {
-        res.status(403).send('Username not found');
+        res.status(401).send('Username not found');
     }
 });
 
