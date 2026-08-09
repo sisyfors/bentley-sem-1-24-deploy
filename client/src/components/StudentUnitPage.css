@@ -110,11 +110,11 @@
 
 .notiflogoimg {
 
-    height: 30px;
+    height: 30px; 
     width: auto
 }
 
 .notiflogoimg:hover {
-        
+
     text-decoration: double;
 }

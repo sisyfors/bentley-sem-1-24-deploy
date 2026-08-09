@@ -1,3 +1,5 @@
+// This screen presents the Units a student is enrolled into
+
 import './StudentUnitPage.css';
 import curtinlogo from '../assets/curtinlogo.png'
 import notification from '../assets/notification.png'

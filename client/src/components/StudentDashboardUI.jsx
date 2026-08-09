@@ -1,3 +1,5 @@
+// This screen showcases the landing page/main page of the Student Dashboard, adapted from Amelia's original design to be consistent with the UC Dashboard design 
+
 import './StudentDashboardUI.css';
 import curtinlogo from '../assets/curtinlogo.png'
 import notification from '../assets/notification.png'
