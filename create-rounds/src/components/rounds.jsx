@@ -9,7 +9,9 @@ function Rounds() {
         startDate: "",
         endDate: "",
         eligibleStudents: "",
-        description: ""
+        description: "",
+        resume: null,
+        coverLetter: null
     });
 
     const inputChanges = (e) => {
@@ -39,6 +41,7 @@ function Rounds() {
                         type="text"
                         name="title"
                         value={roundsDetails.title}
+                        required
                         onChange={inputChanges}
                         placeholder="Title"
                     />
@@ -48,6 +51,7 @@ function Rounds() {
                         type="number"
                         name="round"
                         value={roundsDetails.round}
+                        required
                         onChange={inputChanges}
                         placeholder="Round"
                     />
@@ -57,6 +61,7 @@ function Rounds() {
                         type="date"
                         name="startDate"
                         value={roundsDetails.startDate}
+                        required
                         onChange={inputChanges}
                         placeholder="Start Date"
                     />
@@ -66,6 +71,7 @@ function Rounds() {
                         type="date"
                         name="endDate"
                         value={roundsDetails.endDate}
+                        required
                         onChange={inputChanges}
                         placeholder="End Date"
                     />
@@ -75,6 +81,7 @@ function Rounds() {
                         type="text"
                         name="eligibleStudents"
                         value={roundsDetails.eligibleStudents}
+                        required
                         onChange={inputChanges}
                         placeholder="Eligible Students"
                     />
@@ -84,8 +91,26 @@ function Rounds() {
                         type="text"
                         name="description"
                         value={roundsDetails.description}
+                        required
                         onChange={inputChanges}
                         placeholder="Description"
+                    />
+
+                    <label> Resume </label>    
+                    <input
+                        type="file"
+                        name="resume"
+                        accept=".pdf"
+                        required
+                        onChange={inputChanges}
+                    />
+
+                    <label> Cover Letter </label>    
+                    <input
+                        type="file"
+                        name="coverLetter"
+                        accept=".pdf"
+                        onChange={inputChanges}
                     />
 
                     <button type="submit">
