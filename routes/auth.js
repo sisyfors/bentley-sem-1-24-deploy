@@ -5,9 +5,18 @@ const mongoose = require('mongoose');
 const argon2 = require('argon2');
 const nodemailer = require('nodemailer');
 
-// TODO: Is database connection persistent?
-// mongoose.connect('***whatever the URL is***');
+mongoose.connect(process.env.MONGODB_STRING, { useNewUrlParser: true, useUnifiedTopology: true });
 
+const {
+    CapstoneStudent,
+    Group,
+    HCIGroupApplication,
+    HCIStudent,
+    Project,
+    ProjectApplication,
+    Round,
+    UCAccount
+} = require("../models/index.js");
 
 const sendPasswordEmail = async (to, password) => {
   try {
@@ -81,14 +90,10 @@ router.post('/setup/', async (req, res) => {
 
     switch (type) {
         case 'staff':
-            const UCs = mongoose.model('UCs', UCAccountSchema);
-
-            account = await UCs.findOne({username: email}).exec();
+            account = await UCAccount.findOne({username: email}).exec();
             break;
         case 'student':
-            const Students = mongoose.model('Students', studentSchema);
-
-            account = await Students.findOne({username: email}).exec();
+            account = await CapstoneStudent.findOne({username: email}).exec();
             break;
     }
 
@@ -113,9 +118,7 @@ router.post('/setup/', async (req, res) => {
 
         switch (type) {
             case 'staff':
-                const UCs = mongoose.model('UCs', UCAccountSchema);
-
-                createdAccount = await UCs.create({
+                createdAccount = await UCAccount.create({
                     email: email,
                     username: email,
                     password: securePassword,
@@ -123,9 +126,7 @@ router.post('/setup/', async (req, res) => {
                 });
                 break;
             case 'student':
-                const Students = mongoose.model('Students', studentSchema);
-
-                createdAccount = await Students.create({
+                createdAccount = await CapstoneStudent.create({
                     email: email,
                     username: email,
                     password: securePassword,
@@ -146,14 +147,10 @@ router.post('/login/', async (req, res) => {
 
     switch (type) {
         case 'staff':
-            const UCs = mongoose.model('UCs', UCAccountSchema);
-
-            account = await UCs.findOne({username: username}).exec();
+            account = await UCAccount.findOne({username: username}).exec();
             break;
         case 'student':
-            const Students = mongoose.model('Students', studentSchema);
-
-            account = await Students.findOne({username: username}).exec();
+            account = await CapstoneStudent.findOne({username: username}).exec();
             break;
     }
 
@@ -162,7 +159,7 @@ router.post('/login/', async (req, res) => {
         const saltedPassword = account.salt + password;
 
         if (argon2.verify(account.password, saltedPassword)) {
-            // generate session token
+            // TODO: generate session token
             res.sendStatus(200);
         } 
         else {
@@ -182,14 +179,10 @@ router.post('/otp/', async (req, res) => {
 
     switch (type) {
         case 'staff':
-            const UCs = mongoose.model('UCs', UCAccountSchema);
-
-            account = await UCs.findOne({username: username}).exec();
+            account = await UCAccount.findOne({username: username}).exec();
             break;
         case 'student':
-            const Students = mongoose.model('Students', studentSchema);
-
-            account = await Students.findOne({username: username}).exec();
+            account = await CapstoneStudent.findOne({username: username}).exec();
             break;
     }
 
@@ -199,7 +192,7 @@ router.post('/otp/', async (req, res) => {
             account.otp = null;
             await account.save();
 
-            // generate session token
+            // TODO: generate session token
             res.sendStatus(200);
         } 
         else {
@@ -220,14 +213,10 @@ router.post('/email/', async (req, res) => {
 
     switch (type) {
         case 'staff':
-            const UCs = mongoose.model('UCs', UCAccountSchema);
-
-            account = await UCs.findOne({username: username}).exec();
+            account = await UCAccount.findOne({username: username}).exec();
             break;
         case 'student':
-            const Students = mongoose.model('Students', studentSchema);
-
-            account = await Students.findOne({username: username}).exec();
+            account = await CapstoneStudent.findOne({username: username}).exec();
             break;
     }
 
