@@ -4,6 +4,8 @@ const randomstring = require('randomstring');
 const mongoose = require('mongoose');
 const argon2 = require('argon2');
 const nodemailer = require('nodemailer');
+const jwt = require('jsonwebtoken');
+require("dotenv").config();
 
 mongoose.connect(process.env.MONGODB_STRING, { useNewUrlParser: true, useUnifiedTopology: true });
 
@@ -17,6 +19,27 @@ const {
     Round,
     UCAccount
 } = require("../models/index.js");
+
+const createWebToken = (username, userType) => {
+    return jwt.sign({username, userType}, process.env.WEB_TOKEN_KEY, { expiresIn: 3 * 24 * 60 * 60});
+}
+
+const verifySession = (req, res, next) => {
+  const token = req.cookies.token;
+
+  if (token) {
+    jwt.verify(token, process.env.WEB_TOKEN_KEY, (err, decodedToken) => {
+      if (err) {
+        return res.status(401).json({ message: 'Invalid token' });
+      } else {
+        next();
+      }
+    });
+  } else {
+    res.status(401);
+    throw new Error('Not authorized, no token');
+  }
+};
 
 const sendPasswordEmail = async (to, password) => {
   try {
@@ -90,10 +113,10 @@ router.post('/setup/', async (req, res) => {
 
     switch (type) {
         case 'staff':
-            account = await UCAccount.findOne({username: email}).exec();
+            account = await UCAccount.findOne({Username: email}).exec();
             break;
         case 'student':
-            account = await CapstoneStudent.findOne({username: email}).exec();
+            account = await CapstoneStudent.findOne({Username: email}).exec();
             break;
     }
 
@@ -119,18 +142,18 @@ router.post('/setup/', async (req, res) => {
         switch (type) {
             case 'staff':
                 createdAccount = await UCAccount.create({
-                    email: email,
-                    username: email,
-                    password: securePassword,
-                    salt: salt,
+                    Email: email,
+                    Username: email,
+                    Password: securePassword,
+                    Salt: salt,
                 });
                 break;
             case 'student':
                 createdAccount = await CapstoneStudent.create({
-                    email: email,
-                    username: email,
-                    password: securePassword,
-                    salt: salt,
+                    Email: email,
+                    Username: email,
+                    Password: securePassword,
+                    Salt: salt,
                 });
                 break;
         }
@@ -147,19 +170,20 @@ router.post('/login/', async (req, res) => {
 
     switch (type) {
         case 'staff':
-            account = await UCAccount.findOne({username: username}).exec();
+            account = await UCAccount.findOne({Username: username}).exec();
             break;
         case 'student':
-            account = await CapstoneStudent.findOne({username: username}).exec();
+            account = await CapstoneStudent.findOne({Username: username}).exec();
             break;
     }
 
     if (account)
     {
-        const saltedPassword = account.salt + password;
+        const saltedPassword = account.Salt + password;
 
-        if (argon2.verify(account.password, saltedPassword)) {
-            // TODO: generate session token
+        if (argon2.verify(account.Password, saltedPassword)) {
+            const token = createWebToken(account.Username, type);
+            res.cookie("token", token, {withCredentials: true, httpOnly: false});
             res.sendStatus(200);
         } 
         else {
@@ -179,20 +203,21 @@ router.post('/otp/', async (req, res) => {
 
     switch (type) {
         case 'staff':
-            account = await UCAccount.findOne({username: username}).exec();
+            account = await UCAccount.findOne({Username: username}).exec();
             break;
         case 'student':
-            account = await CapstoneStudent.findOne({username: username}).exec();
+            account = await CapstoneStudent.findOne({Username: username}).exec();
             break;
     }
 
     if (account)
     {
-        if (account.otp === otp) {
-            account.otp = null;
+        if (account.OTP === otp) {
+            account.OTP = null;
             await account.save();
 
-            // TODO: generate session token
+            const token = createWebToken(account.Username, type);
+            res.cookie("token", token, {withCredentials: true, httpOnly: false});
             res.sendStatus(200);
         } 
         else {
@@ -204,30 +229,37 @@ router.post('/otp/', async (req, res) => {
     }
 });
 
-router.post('/email/', async (req, res) => {
-    console.log(req.body); // proves backend received data
-    // from user session + body
-    const { newEmail, username, type } = req.body;
+router.post('/email/', verifySession, async (req, res) => {
+    // From user session + body
+
+    const decodedToken = jwt.verify(req.cookies.token, process.env.WEB_TOKEN_KEY);
+
+    const username = decodedToken.username;
+    const type = decodedToken.userType;
+
+    const { newEmail } = req.body;
 
     var account = null;
 
     switch (type) {
         case 'staff':
-            account = await UCAccount.findOne({username: username}).exec();
+            account = await UCAccount.findOne({Username: username}).exec();
             break;
         case 'student':
-            account = await CapstoneStudent.findOne({username: username}).exec();
+            account = await CapstoneStudent.findOne({Username: username}).exec();
             break;
     }
 
     if (account)
     {
-        account.email = newEmail;
+        account.Email = newEmail;
 
         var OTP = randomstring.generate({length: 5, charset: 'numeric'});
         
         await sendOTPEmail(newEmail, OTP);
 
+        account.OTP = OTP;
+        await account.save();
         // store OTP in schema, then delete once log-in is successful
         // OTP necessary to verify email, otherwise Curtin email is used, though new email is stored
         res.sendStatus(200);
@@ -237,4 +269,4 @@ router.post('/email/', async (req, res) => {
     }
 });
 
-module.exports = router;
+module.exports = {verifySession, router};
