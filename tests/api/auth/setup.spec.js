@@ -12,27 +12,31 @@ Parameters:
  */
 
 test.describe('Verify Setup Account API', () => {
-    test.fixme('Invalid parameters - should return error code', async ({ request }) => {
+    test.fail('Invalid parameters - should return error code', async ({ request }) => {
+        const badParameters = { email: 'bademail', type: 'unitcoordinator' };
+        const apiCall = await request.post('/setup', {data: badParameters});
+        
+        expect(apiCall.status()).toEqual(422);  
     });
 
     test('Account already exists - should return error code', async ({ request }) => {
         const credentials = { email: 'existing.person@student.curtin.edu.au', type: 'student' };
         const apiCall = await request.post('/setup', {data: credentials});
-        expect(apiCall.status()).toEqual(403);
+        expect(apiCall.status()).toEqual(422);
         expect(apiCall.statusText()).toEqual('Account already exists');
     });
 
     test('Non-Curtin email address - should return error code', async ({ request }) => {
         const credentials = { email: 'intruder@uwa.edu.au', type: 'student' };
         const apiCall = await request.post('/setup', {data: credentials});
-        expect(apiCall.status()).toEqual(401);
+        expect(apiCall.status()).toEqual(422);
         expect(apiCall.statusText()).toEqual('Non-Curtin email address');
     });
 
     test('Staff doesn\'t have staff email - should return error code', async ({ request }) => {
         const credentials = { email: 'pleb@student.curtin.edu.au', type: 'staff' };
         const apiCall = await request.post('/setup', {data: credentials});
-        expect(apiCall.status()).toEqual(401);
+        expect(apiCall.status()).toEqual(422);
         expect(apiCall.statusText()).toEqual('Staff must have staff email address');
     });
 

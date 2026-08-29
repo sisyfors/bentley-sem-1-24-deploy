@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const argon2 = require('argon2');
 const nodemailer = require('nodemailer');
 const jwt = require('jsonwebtoken');
+const joi = require('joi');
 require("dotenv").config();
 
 mongoose.connect(process.env.MONGODB_STRING, { useNewUrlParser: true, useUnifiedTopology: true });
@@ -105,7 +106,38 @@ const sendOTPEmail = async (to, otp) => {
   }
 };
 
-router.post('/setup/', async (req, res) => {
+const validationSchemas = {
+    setupSchema: joi.object({
+        email: joi.string().email().required(),
+        type: joi.string().alpha().valid('staff', 'student').required(),}),
+    loginSchema: joi.object({
+        username: joi.string().email().required(),
+        password: joi.string().required(),
+        type: joi.string().alpha().valid('staff', 'student').required(),}),
+    otpSchema: joi.object({
+        username: joi.string().email().required(),
+        otp: joi.number().required(),
+        type: joi.string().alpha().valid('staff', 'student').required(),}),
+    emailSchema: joi.object({
+        newEmail: joi.string().email().required(),}),
+};
+
+const validateParameters = (schema, property) => {
+    return (req, res, next) => {
+        const { error } = schema.validate(req.body);
+
+        if (error == null) {
+            next();
+        } else {
+            const { details } = error;
+            const message = details.map(error => error.message).join(',');
+
+            res.status(422).json({ error: message });
+        }
+    };
+};
+
+router.post('/setup/', validateParameters(validationSchemas.setupSchema), async (req, res) => {
     console.log(req.body); // proves backend received data
     const { email, type } = req.body;
     
@@ -121,13 +153,13 @@ router.post('/setup/', async (req, res) => {
     }
 
     if (account) {
-        res.status(401).send('Account already exists.');
+        res.status(422).send('Account already exists.');
     }
     else if (!(email.endsWith('@student.curtin.edu.au') || email.endsWith('@curtin.edu.au'))) {
-        res.status(401).send('Non-Curtin email address');
+        res.status(422).send('Non-Curtin email address');
     } 
     else if (type === 'staff' && !email.endsWith('@curtin.edu.au')) {
-        res.status(401).send('Staff must have staff email address');
+        res.status(422).send('Staff must have staff email address');
     } 
     else {
         var newPassword = randomstring.generate(12);
@@ -162,7 +194,7 @@ router.post('/setup/', async (req, res) => {
     }
 });
 
-router.post('/login/', async (req, res) => {
+router.post('/login/', validateParameters(validationSchemas.loginSchema), async (req, res) => {
     console.log(req.body); // proves backend received data
     const { username, password, type } = req.body;
     
@@ -195,7 +227,7 @@ router.post('/login/', async (req, res) => {
     }
 });
 
-router.post('/otp/', async (req, res) => {
+router.post('/otp/', validateParameters(validationSchemas.otpSchema), async (req, res) => {
     console.log(req.body); // proves backend received data
     const { username, otp, type } = req.body;
     
@@ -229,7 +261,7 @@ router.post('/otp/', async (req, res) => {
     }
 });
 
-router.post('/email/', verifySession, async (req, res) => {
+router.post('/email/', validateParameters(validationSchemas.emailSchema), verifySession, async (req, res) => {
     // From user session + body
 
     const decodedToken = jwt.verify(req.cookies.token, process.env.WEB_TOKEN_KEY);
@@ -265,7 +297,7 @@ router.post('/email/', verifySession, async (req, res) => {
         res.sendStatus(200);
     } 
     else {
-        res.status(401).send('Username not found');
+        res.status(400).send('Account not found');
     }
 });
 
