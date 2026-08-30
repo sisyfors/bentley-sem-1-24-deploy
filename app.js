@@ -8,7 +8,7 @@ app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-const authRoute = require('./routes/auth');
+const authRoute = require('./routes/auth').router;
 
 // Use routes
 app.use('/auth', authRoute);

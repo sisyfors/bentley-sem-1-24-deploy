@@ -8,7 +8,7 @@ const jwt = require('jsonwebtoken');
 const joi = require('joi');
 require("dotenv").config();
 
-mongoose.connect(process.env.MONGODB_STRING, { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect(process.env.MONGODB_STRING);
 
 const {
     CapstoneStudent,
@@ -21,23 +21,23 @@ const {
     UCAccount
 } = require("../models/index.js");
 
-const createWebToken = (username, userType) => {
+const createWebToken = async (username, userType) => {
     return jwt.sign({username, userType}, process.env.WEB_TOKEN_KEY, { expiresIn: 3 * 24 * 60 * 60});
 }
 
-const verifySession = (req, res, next) => {
+const verifySession = async (req, res, next) => {
   const token = req.cookies.token;
 
   if (token) {
     jwt.verify(token, process.env.WEB_TOKEN_KEY, (err, decodedToken) => {
       if (err) {
-        return res.status(401).json({ message: 'Invalid token' });
+        return res.status(401).send('Invalid token');
       } else {
         next();
       }
     });
   } else {
-    res.status(401);
+    res.status(401).send('Not authorised');
     throw new Error('Not authorized, no token');
   }
 };
@@ -109,21 +109,21 @@ const sendOTPEmail = async (to, otp) => {
 const validationSchemas = {
     setupSchema: joi.object({
         email: joi.string().email().required(),
-        type: joi.string().alpha().valid('staff', 'student').required(),}),
+        type: joi.string().valid('staff', 'student').required(),}),
     loginSchema: joi.object({
         username: joi.string().email().required(),
         password: joi.string().required(),
-        type: joi.string().alpha().valid('staff', 'student').required(),}),
+        type: joi.string().valid('staff', 'student').required(),}),
     otpSchema: joi.object({
         username: joi.string().email().required(),
         otp: joi.number().required(),
-        type: joi.string().alpha().valid('staff', 'student').required(),}),
+        type: joi.string().valid('staff', 'student').required(),}),
     emailSchema: joi.object({
         newEmail: joi.string().email().required(),}),
 };
 
 const validateParameters = (schema, property) => {
-    return (req, res, next) => {
+    return async (req, res, next) => {
         const { error } = schema.validate(req.body);
 
         if (error == null) {
@@ -137,7 +137,7 @@ const validateParameters = (schema, property) => {
     };
 };
 
-router.post('/setup/', validateParameters(validationSchemas.setupSchema), async (req, res) => {
+router.post('/setup', validateParameters(validationSchemas.setupSchema), async (req, res) => {
     console.log(req.body); // proves backend received data
     const { email, type } = req.body;
     
@@ -194,7 +194,7 @@ router.post('/setup/', validateParameters(validationSchemas.setupSchema), async 
     }
 });
 
-router.post('/login/', validateParameters(validationSchemas.loginSchema), async (req, res) => {
+router.post('/login', validateParameters(validationSchemas.loginSchema), async (req, res) => {
     console.log(req.body); // proves backend received data
     const { username, password, type } = req.body;
     
@@ -214,7 +214,7 @@ router.post('/login/', validateParameters(validationSchemas.loginSchema), async 
         const saltedPassword = account.Salt + password;
 
         if (argon2.verify(account.Password, saltedPassword)) {
-            const token = createWebToken(account.Username, type);
+            const token = await createWebToken(account.Username, type);
             res.cookie("token", token, {withCredentials: true, httpOnly: false});
             res.sendStatus(200);
         } 
@@ -227,7 +227,7 @@ router.post('/login/', validateParameters(validationSchemas.loginSchema), async 
     }
 });
 
-router.post('/otp/', validateParameters(validationSchemas.otpSchema), async (req, res) => {
+router.post('/otp', validateParameters(validationSchemas.otpSchema), async (req, res) => {
     console.log(req.body); // proves backend received data
     const { username, otp, type } = req.body;
     
@@ -248,7 +248,7 @@ router.post('/otp/', validateParameters(validationSchemas.otpSchema), async (req
             account.OTP = null;
             await account.save();
 
-            const token = createWebToken(account.Username, type);
+            const token = await createWebToken(account.Username, type);
             res.cookie("token", token, {withCredentials: true, httpOnly: false});
             res.sendStatus(200);
         } 
@@ -261,7 +261,7 @@ router.post('/otp/', validateParameters(validationSchemas.otpSchema), async (req
     }
 });
 
-router.post('/email/', validateParameters(validationSchemas.emailSchema), verifySession, async (req, res) => {
+router.post('/email', validateParameters(validationSchemas.emailSchema), verifySession, async (req, res) => {
     // From user session + body
 
     const decodedToken = jwt.verify(req.cookies.token, process.env.WEB_TOKEN_KEY);
@@ -301,4 +301,4 @@ router.post('/email/', validateParameters(validationSchemas.emailSchema), verify
     }
 });
 
-module.exports = {verifySession, router};
+module.exports = { router, verifySession };
