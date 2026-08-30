@@ -36,7 +36,7 @@ function Rounds() {
             <div className="form-box">
                 <form onSubmit={handleSubmit}>
                     
-                    <label> Ttitle </label>
+                    <label> Title </label>
                     <input 
                         type="text"
                         name="title"
