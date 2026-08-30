@@ -153,7 +153,7 @@ router.post('/setup', validateParameters(validationSchemas.setupSchema), async (
     }
 
     if (account) {
-        res.status(422).send('Account already exists.');
+        res.status(422).send('Account already exists');
     }
     else if (!(email.endsWith('@student.curtin.edu.au') || email.endsWith('@curtin.edu.au'))) {
         res.status(422).send('Non-Curtin email address');

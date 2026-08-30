@@ -48,11 +48,11 @@ test.describe('Verify Setup Account API', () => {
     });
 
     test('Valid details - should return success code and created account', async () => {
-        const credentials = { email: 'test.student@student.curtin.edu.au', type: 'student' };
+        const credentials = { email: '20216829@student.curtin.edu.au', type: 'student' };
         const apiCall = await apiContext.post('', {data: credentials});
         expect(apiCall.status()).toEqual(201);
 
         const account = await apiCall.json();
-        expect(account.Username).toEqual('test.student@student.curtin.edu.au');
+        expect(account.Username).toEqual('20216829@student.curtin.edu.au');
     });
 });
