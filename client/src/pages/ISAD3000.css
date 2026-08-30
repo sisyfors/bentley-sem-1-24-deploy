@@ -1,0 +1,43 @@
+.isad3001-container {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.main-content {
+  flex: 1;
+  min-width: 0;
+  padding: 30px;
+}
+
+.unit-name {
+  margin-bottom: 20px;
+}
+
+.unit-name h1 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.unit-name p {
+  margin-top: 8px;
+  color: #666;
+}
+
+.unit-menu {
+  margin-top: 15px;
+}
+
+.unit-menu h3 {
+  margin: 0;
+  padding: 10px;
+  font-size: 14px;
+}
+
+.unit-menu li {
+  padding-left: 25px;
+}
+
+.top-logo {
+  position: absolute;
+}

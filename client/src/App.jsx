@@ -2,8 +2,9 @@ import { useState } from 'react'
 import './App.css'
 import UC_Dashboard from './pages/UC_Dashboard'
 import WORK3008 from "./pages/WORK3008";
+import ISAD3000 from "./pages/ISAD3000";
+
 import { Routes, Route, Link } from "react-router-dom"
-import ISAD3001 from "./pages/ISAD3001";
 
 function Home() {
   const [count, setCount] = useState(0)
@@ -58,9 +59,12 @@ function App() {
       <Route path="/" element={<Home />} />
       <Route path="/ucdashboard" element={<UC_Dashboard />} />
       <Route path="/ucdashboard/work3008" element={<WORK3008 />} />
-      <Route path="/ucdashboard/isad3001" element={<ISAD3001 />} />
+      <Route
+        path="/ucdashboard/isad3000"
+        element={<ISAD3000 />}
+      />
     </Routes>
   );
-}
+} 
 
 export default App
