@@ -138,7 +138,6 @@ const validateParameters = (schema, property) => {
 };
 
 router.post('/setup', validateParameters(validationSchemas.setupSchema), async (req, res) => {
-    console.log(req.body); // proves backend received data
     const { email, type } = req.body;
     
     var account = null;
@@ -195,7 +194,6 @@ router.post('/setup', validateParameters(validationSchemas.setupSchema), async (
 });
 
 router.post('/login', validateParameters(validationSchemas.loginSchema), async (req, res) => {
-    console.log(req.body); // proves backend received data
     const { username, password, type } = req.body;
     
     var account = null;
@@ -213,7 +211,7 @@ router.post('/login', validateParameters(validationSchemas.loginSchema), async (
     {
         const saltedPassword = account.Salt + password;
 
-        if (argon2.verify(account.Password, saltedPassword)) {
+        if (await argon2.verify(account.Password, saltedPassword)) {
             const token = await createWebToken(account.Username, type);
             res.cookie("token", token, {withCredentials: true, httpOnly: false});
             res.sendStatus(200);
@@ -228,7 +226,6 @@ router.post('/login', validateParameters(validationSchemas.loginSchema), async (
 });
 
 router.post('/otp', validateParameters(validationSchemas.otpSchema), async (req, res) => {
-    console.log(req.body); // proves backend received data
     const { username, otp, type } = req.body;
     
     var account = null;
@@ -245,9 +242,6 @@ router.post('/otp', validateParameters(validationSchemas.otpSchema), async (req,
     if (account)
     {
         if (account.OTP === otp) {
-            account.OTP = null;
-            await account.save();
-
             const token = await createWebToken(account.Username, type);
             res.cookie("token", token, {withCredentials: true, httpOnly: false});
             res.sendStatus(200);
@@ -292,7 +286,6 @@ router.post('/email', validateParameters(validationSchemas.emailSchema), verifyS
 
         account.OTP = OTP;
         await account.save();
-        // store OTP in schema, then delete once log-in is successful
         // OTP necessary to verify email, otherwise Curtin email is used, though new email is stored
         res.sendStatus(200);
     } 
