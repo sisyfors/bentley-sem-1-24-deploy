@@ -1,5 +1,14 @@
 // @ts-check
 import { test, expect } from '@playwright/test';
+const mongoose = require('mongoose');
+require("dotenv").config();
+
+// @ts-ignore
+mongoose.connect(process.env.MONGODB_STRING, {dbName: 'ccp24'});
+
+const {
+    CapstoneStudent
+} = require("../../../models/index.js");
 
 /* 
 API: /auth/setup
@@ -54,5 +63,7 @@ test.describe('Verify Setup Account API', () => {
 
         const account = await apiCall.json();
         expect(account.Username).toEqual('20216829@student.curtin.edu.au');
+
+        await CapstoneStudent.deleteOne({Username: credentials.email});
     });
 });

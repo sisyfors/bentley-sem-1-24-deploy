@@ -6,9 +6,11 @@ const argon2 = require('argon2');
 const nodemailer = require('nodemailer');
 const jwt = require('jsonwebtoken');
 const joi = require('joi');
+const Resend = require('resend');
 require("dotenv").config();
 
-mongoose.connect(process.env.MONGODB_STRING);
+mongoose.connect(process.env.MONGODB_STRING, {dbName: 'ccp24'});
+const resend = new Resend.Resend(process.env.RESEND_API_KEY);
 
 const {
     CapstoneStudent,
@@ -43,67 +45,29 @@ const verifySession = async (req, res, next) => {
 };
 
 const sendPasswordEmail = async (to, password) => {
-  try {
-    // Creates a connection to the email server
-    // TODO: Must create email account and fill in details
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: process.env.SMTP_PORT,
-      secure: true,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
+    const { data, error } = await resend.emails.send({
+        from: "Dashboard Web App <auth@curtindashboard.tech>",
+        to: to,
+        subject: "Welcome, here are your details",
+        html: `<strong>Here is your default password: ${password}</strong>`,
     });
 
-    // TODO: Create an html template later
-    const emailContent = {
-      from: process.env.FROM_EMAIL,
-      to: to,
-      subject: 'Welcome, here are your details',
-      text: `Here is your default password: ${password}`,
-    };
-
-    // Send the email
-    const info = await transporter.sendMail(emailContent);
-    console.log('Email sent:', info.messageId);
-  } 
-  catch (error) {
-    console.error('Error sending email:', error);
-    throw error;
-  }
+    if (error) {
+        throw error;
+    }
 };
 
 const sendOTPEmail = async (to, otp) => {
-  try {
-    // Creates a connection to the email server
-    // TODO: Must create email account and fill in details
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: process.env.SMTP_PORT,
-      secure: true,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
+    const { data, error } = await resend.emails.send({
+        from: "Dashboard Web App <auth@curtindashboard.tech>",
+        to: to,
+        subject: "OTP Code",
+        html: `<strong>Here is your one-time-password: ${otp}</strong>`,
     });
 
-    // TODO: Create an html template later
-    const emailContent = {
-      from: process.env.FROM_EMAIL,
-      to: to,
-      subject: 'OTP Code',
-      text: `Here is your one-time-password: ${otp}`,
-    };
-
-    // Send the email
-    const info = await transporter.sendMail(emailContent);
-    console.log('Email sent:', info.messageId);
-  } 
-  catch (error) {
-    console.error('Error sending email:', error);
-    throw error;
-  }
+    if (error) {
+        throw error;
+    }
 };
 
 const validationSchemas = {
@@ -161,18 +125,24 @@ router.post('/setup', validateParameters(validationSchemas.setupSchema), async (
         res.status(422).send('Staff must have staff email address');
     } 
     else {
-        var newPassword = randomstring.generate(12);
-        const salt = randomstring.generate(16);
+        const newPassword = randomstring.generate(12);
         
         await sendPasswordEmail(email, newPassword);
 
-        const securePassword = argon2.hash(salt + newPassword);
+        const salt = randomstring.generate(16);
+        const securePassword = await argon2.hash(salt + newPassword);
+
+        const studentID = email.substring(0, email.indexOf('@'));
 
         var createdAccount = null;
 
         switch (type) {
             case 'staff':
                 createdAccount = await UCAccount.create({
+                    Name: studentID,
+                    StudentID: studentID,
+                    TermsAccepted: 0,
+                    Unit: 'ISAD3000',
                     Email: email,
                     Username: email,
                     Password: securePassword,
@@ -181,6 +151,10 @@ router.post('/setup', validateParameters(validationSchemas.setupSchema), async (
                 break;
             case 'student':
                 createdAccount = await CapstoneStudent.create({
+                    Name: studentID,
+                    StudentID: studentID,
+                    TermsAccepted: 0,
+                    Unit: 'ISAD3000',
                     Email: email,
                     Username: email,
                     Password: securePassword,
@@ -287,7 +261,7 @@ router.post('/email', validateParameters(validationSchemas.emailSchema), verifyS
         account.OTP = OTP;
         await account.save();
         // OTP necessary to verify email, otherwise Curtin email is used, though new email is stored
-        res.sendStatus(200);
+        res.status(200).json(account);
     } 
     else {
         res.status(400).send('Account not found');
