@@ -84,6 +84,8 @@ const validationSchemas = {
         type: joi.string().valid('staff', 'student').required(),}),
     emailSchema: joi.object({
         newEmail: joi.string().email().required(),}),
+    verifyEmailSchema: joi.object({
+        otp: joi.number().required(),}),
 };
 
 const validateParameters = (schema, property) => {
@@ -132,17 +134,15 @@ router.post('/setup', validateParameters(validationSchemas.setupSchema), async (
         const salt = randomstring.generate(16);
         const securePassword = await argon2.hash(salt + newPassword);
 
-        const studentID = email.substring(0, email.indexOf('@'));
+        const id = email.substring(0, email.indexOf('@'));
 
         var createdAccount = null;
 
         switch (type) {
             case 'staff':
                 createdAccount = await UCAccount.create({
-                    Name: studentID,
-                    StudentID: studentID,
-                    TermsAccepted: 0,
-                    Unit: 'ISAD3000',
+                    Name: id,
+                    Type: 'ISAD3000',
                     Email: email,
                     Username: email,
                     Password: securePassword,
@@ -151,8 +151,8 @@ router.post('/setup', validateParameters(validationSchemas.setupSchema), async (
                 break;
             case 'student':
                 createdAccount = await CapstoneStudent.create({
-                    Name: studentID,
-                    StudentID: studentID,
+                    Name: id,
+                    StudentID: id,
                     TermsAccepted: 0,
                     Unit: 'ISAD3000',
                     Email: email,
@@ -231,7 +231,6 @@ router.post('/otp', validateParameters(validationSchemas.otpSchema), async (req,
 
 router.post('/email', validateParameters(validationSchemas.emailSchema), verifySession, async (req, res) => {
     // From user session + body
-
     const decodedToken = jwt.verify(req.cookies.token, process.env.WEB_TOKEN_KEY);
 
     const username = decodedToken.username;
@@ -243,7 +242,7 @@ router.post('/email', validateParameters(validationSchemas.emailSchema), verifyS
 
     switch (type) {
         case 'staff':
-            account = await UCAccount.findOne({Username: username}).exec();
+            return res.status(403).send('Only students can set personal email')
             break;
         case 'student':
             account = await CapstoneStudent.findOne({Username: username}).exec();
@@ -252,19 +251,60 @@ router.post('/email', validateParameters(validationSchemas.emailSchema), verifyS
 
     if (account)
     {
-        account.Email = newEmail;
+        if (account.Email !== newEmail) {
+            account.emailVerified = false;
+            account.Email = newEmail;
 
-        var OTP = randomstring.generate({length: 5, charset: 'numeric'});
+            var OTP = randomstring.generate({length: 5, charset: 'numeric'});
         
-        await sendOTPEmail(newEmail, OTP);
+            await sendOTPEmail(newEmail, OTP);
 
-        account.OTP = OTP;
-        await account.save();
-        // OTP necessary to verify email, otherwise Curtin email is used, though new email is stored
+            account.OTP = OTP;
+            await account.save();
+            // OTP necessary to verify email, otherwise Curtin email is used, though new email is stored
+        }
+
         res.status(200).json(account);
     } 
     else {
         res.status(400).send('Account not found');
+    }
+});
+
+router.post('/verifyEmail', validateParameters(validationSchemas.verifyEmailSchema), verifySession, async (req, res) => {
+    // From user session + body
+    const decodedToken = jwt.verify(req.cookies.token, process.env.WEB_TOKEN_KEY);
+
+    const username = decodedToken.username;
+    const type = decodedToken.userType;
+
+    const { otp } = req.body;
+    
+    var account = null;
+
+    switch (type) {
+        case 'staff':
+            return res.status(403).send('Only students can set personal email')
+            break;
+        case 'student':
+            account = await CapstoneStudent.findOne({Username: username}).exec();
+            break;
+    }
+
+    if (account)
+    {
+        if (account.OTP === otp) {
+            account.emailVerified = true;
+            await account.save();
+
+            res.sendStatus(200);
+        } 
+        else {
+            res.status(401).send('Incorrect OTP');
+        }
+    } 
+    else {
+        res.status(401).send('Account not found');
     }
 });
 
