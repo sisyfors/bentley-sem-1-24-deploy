@@ -3,7 +3,6 @@ const router = express.Router();
 const randomstring = require('randomstring');
 const mongoose = require('mongoose');
 const argon2 = require('argon2');
-const nodemailer = require('nodemailer');
 const jwt = require('jsonwebtoken');
 const joi = require('joi');
 const Resend = require('resend');
@@ -35,6 +34,46 @@ const verifySession = async (req, res, next) => {
       if (err) {
         return res.status(401).send('Invalid token');
       } else {
+        next();
+      }
+    });
+  } else {
+    res.status(401).send('Not authorised');
+    throw new Error('Not authorized, no token');
+  }
+};
+
+const verifyStudentSession = async (req, res, next) => {
+  const token = req.cookies.token;
+
+  if (token) {
+    jwt.verify(token, process.env.WEB_TOKEN_KEY, (err, decodedToken) => {
+      if (err) {
+        return res.status(401).send('Invalid token');
+      } else {
+        if (decodedToken.userType !== 'student') {
+            return res.status(401).send('Not a student');
+        }
+        next();
+      }
+    });
+  } else {
+    res.status(401).send('Not authorised');
+    throw new Error('Not authorized, no token');
+  }
+};
+
+const verifyStaffSession = async (req, res, next) => {
+  const token = req.cookies.token;
+
+  if (token) {
+    jwt.verify(token, process.env.WEB_TOKEN_KEY, (err, decodedToken) => {
+      if (err) {
+        return res.status(401).send('Invalid token');
+      } else {
+        if (decodedToken.userType !== 'staff') {
+            return res.status(401).send('Not a staff member');
+        }
         next();
       }
     });
@@ -86,6 +125,9 @@ const validationSchemas = {
         newEmail: joi.string().email().required(),}),
     verifyEmailSchema: joi.object({
         otp: joi.number().required(),}),
+    resetPasswordSchema: joi.object().keys({
+        password: joi.string().required(),
+        reconfirmPassword: joi.string().required()}),
 };
 
 const validateParameters = (schema, property) => {
@@ -229,6 +271,103 @@ router.post('/otp', validateParameters(validationSchemas.otpSchema), async (req,
     }
 });
 
+/* Forgot Password process:
+0. Front-end displays forgot password page
+1. User enters email and user type and front-end calls /forgotPassword
+2. /forgotPassword sends OTP to supplied email
+3. Front-end changes to OTP entry page
+4. User enters OTP and front-end calls /otp
+5. /otp establishes a user session
+6. Front-end changes to reset password page
+7. User enters password and front-end calls /resetPassword
+8. Upon successful response, front-end navigates to dashboard
+*/
+
+router.post('/forgotPassword', validateParameters(validationSchemas.setupSchema), async (req, res) => {
+    const { email, type } = req.body;
+    
+    var account = null;
+
+    switch (type) {
+        case 'staff':
+            account = await UCAccount.findOne({Username: email}).exec();
+            break;
+        case 'student':
+            account = await CapstoneStudent.findOne({Username: email}).exec();
+            break;
+    }
+
+    if (account)
+    {
+        var OTP = randomstring.generate({length: 5, charset: 'numeric'});
+        
+        await sendOTPEmail(email, OTP);
+
+        account.OTP = OTP;
+        await account.save();
+
+        res.sendStatus(200);
+    } 
+    else {
+        res.status(401).send('Account not found');
+    }
+});
+
+router.post('/resetPassword', validateParameters(validationSchemas.resetPasswordSchema), verifySession, async(req, res) => {
+    console.log("Reset Password");
+    console.log("User input:", req.body);
+
+    // From user session + body
+    const decodedToken = jwt.verify(req.cookies.token, process.env.WEB_TOKEN_KEY);
+
+    const username = decodedToken.username;
+    const type = decodedToken.userType;
+
+    const { password, reconfirmPassword } = req.body;
+
+    if (password !== reconfirmPassword) {
+        console.log("Passwords do not match");
+        return res.status(400).json({
+            message: "Passwords do not match"
+        });
+    }
+
+    var user = null;
+
+    switch (type) {
+        case 'staff':
+            user = await UCAccount.findOne({Username: username}).exec();
+            break;
+        case 'student':
+            user = await CapstoneStudent.findOne({Username: username}).exec();
+            break;
+    }
+
+    if (user) {
+        try {
+            const newPassword = await argon2.hash(user.Salt + password);
+
+            user.Password = newPassword;
+            await user.save();
+
+            console.log("Password Changed Successfully!")
+
+            return res.status(200).json({
+                message: "Password Changed Successfully!"
+            });
+        }
+        catch (err) {
+            console.error("Reset Password Error:", err)
+
+            return res.status(500).json({
+                message: "Failed to reset password!"
+            });
+        }
+    } else {
+        res.status(401).send('Account not found');
+    }
+});
+
 router.post('/email', validateParameters(validationSchemas.emailSchema), verifySession, async (req, res) => {
     // From user session + body
     const decodedToken = jwt.verify(req.cookies.token, process.env.WEB_TOKEN_KEY);
@@ -267,7 +406,7 @@ router.post('/email', validateParameters(validationSchemas.emailSchema), verifyS
         res.status(200).json(account);
     } 
     else {
-        res.status(400).send('Account not found');
+        res.status(401).send('Account not found');
     }
 });
 
@@ -308,4 +447,4 @@ router.post('/verifyEmail', validateParameters(validationSchemas.verifyEmailSche
     }
 });
 
-module.exports = { router, verifySession };
+module.exports = { router, verifySession, verifyStudentSession, verifyStaffSession };
