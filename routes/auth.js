@@ -4,10 +4,43 @@ const randomstring = require('randomstring');
 const mongoose = require('mongoose');
 const argon2 = require('argon2');
 const nodemailer = require('nodemailer');
+const jwt = require('jsonwebtoken');
+const joi = require('joi');
+require("dotenv").config();
 
-// TODO: Is database connection persistent?
-// mongoose.connect('***whatever the URL is***');
+mongoose.connect(process.env.MONGODB_STRING);
 
+const {
+    CapstoneStudent,
+    Group,
+    HCIGroupApplication,
+    HCIStudent,
+    Project,
+    ProjectApplication,
+    Round,
+    UCAccount
+} = require("../models/index.js");
+
+const createWebToken = async (username, userType) => {
+    return jwt.sign({username, userType}, process.env.WEB_TOKEN_KEY, { expiresIn: 3 * 24 * 60 * 60});
+}
+
+const verifySession = async (req, res, next) => {
+  const token = req.cookies.token;
+
+  if (token) {
+    jwt.verify(token, process.env.WEB_TOKEN_KEY, (err, decodedToken) => {
+      if (err) {
+        return res.status(401).send('Invalid token');
+      } else {
+        next();
+      }
+    });
+  } else {
+    res.status(401).send('Not authorised');
+    throw new Error('Not authorized, no token');
+  }
+};
 
 const sendPasswordEmail = async (to, password) => {
   try {
@@ -73,7 +106,38 @@ const sendOTPEmail = async (to, otp) => {
   }
 };
 
-router.post('/setup/', async (req, res) => {
+const validationSchemas = {
+    setupSchema: joi.object({
+        email: joi.string().email().required(),
+        type: joi.string().valid('staff', 'student').required(),}),
+    loginSchema: joi.object({
+        username: joi.string().email().required(),
+        password: joi.string().required(),
+        type: joi.string().valid('staff', 'student').required(),}),
+    otpSchema: joi.object({
+        username: joi.string().email().required(),
+        otp: joi.number().required(),
+        type: joi.string().valid('staff', 'student').required(),}),
+    emailSchema: joi.object({
+        newEmail: joi.string().email().required(),}),
+};
+
+const validateParameters = (schema, property) => {
+    return async (req, res, next) => {
+        const { error } = schema.validate(req.body);
+
+        if (error == null) {
+            next();
+        } else {
+            const { details } = error;
+            const message = details.map(error => error.message).join(',');
+
+            res.status(422).json({ error: message });
+        }
+    };
+};
+
+router.post('/setup', validateParameters(validationSchemas.setupSchema), async (req, res) => {
     console.log(req.body); // proves backend received data
     const { email, type } = req.body;
     
@@ -81,25 +145,21 @@ router.post('/setup/', async (req, res) => {
 
     switch (type) {
         case 'staff':
-            const UCs = mongoose.model('UCs', UCAccountSchema);
-
-            account = await UCs.findOne({username: email}).exec();
+            account = await UCAccount.findOne({Username: email}).exec();
             break;
         case 'student':
-            const Students = mongoose.model('Students', studentSchema);
-
-            account = await Students.findOne({username: email}).exec();
+            account = await CapstoneStudent.findOne({Username: email}).exec();
             break;
     }
 
     if (account) {
-        res.status(401).send('Account already exists.');
+        res.status(422).send('Account already exists.');
     }
     else if (!(email.endsWith('@student.curtin.edu.au') || email.endsWith('@curtin.edu.au'))) {
-        res.status(401).send('Non-Curtin email address');
+        res.status(422).send('Non-Curtin email address');
     } 
     else if (type === 'staff' && !email.endsWith('@curtin.edu.au')) {
-        res.status(401).send('Staff must have staff email address');
+        res.status(422).send('Staff must have staff email address');
     } 
     else {
         var newPassword = randomstring.generate(12);
@@ -113,23 +173,19 @@ router.post('/setup/', async (req, res) => {
 
         switch (type) {
             case 'staff':
-                const UCs = mongoose.model('UCs', UCAccountSchema);
-
-                createdAccount = await UCs.create({
-                    email: email,
-                    username: email,
-                    password: securePassword,
-                    salt: salt,
+                createdAccount = await UCAccount.create({
+                    Email: email,
+                    Username: email,
+                    Password: securePassword,
+                    Salt: salt,
                 });
                 break;
             case 'student':
-                const Students = mongoose.model('Students', studentSchema);
-
-                createdAccount = await Students.create({
-                    email: email,
-                    username: email,
-                    password: securePassword,
-                    salt: salt,
+                createdAccount = await CapstoneStudent.create({
+                    Email: email,
+                    Username: email,
+                    Password: securePassword,
+                    Salt: salt,
                 });
                 break;
         }
@@ -138,7 +194,7 @@ router.post('/setup/', async (req, res) => {
     }
 });
 
-router.post('/login/', async (req, res) => {
+router.post('/login', validateParameters(validationSchemas.loginSchema), async (req, res) => {
     console.log(req.body); // proves backend received data
     const { username, password, type } = req.body;
     
@@ -146,23 +202,20 @@ router.post('/login/', async (req, res) => {
 
     switch (type) {
         case 'staff':
-            const UCs = mongoose.model('UCs', UCAccountSchema);
-
-            account = await UCs.findOne({username: username}).exec();
+            account = await UCAccount.findOne({Username: username}).exec();
             break;
         case 'student':
-            const Students = mongoose.model('Students', studentSchema);
-
-            account = await Students.findOne({username: username}).exec();
+            account = await CapstoneStudent.findOne({Username: username}).exec();
             break;
     }
 
     if (account)
     {
-        const saltedPassword = account.salt + password;
+        const saltedPassword = account.Salt + password;
 
-        if (argon2.verify(account.password, saltedPassword)) {
-            // generate session token
+        if (argon2.verify(account.Password, saltedPassword)) {
+            const token = await createWebToken(account.Username, type);
+            res.cookie("token", token, {withCredentials: true, httpOnly: false});
             res.sendStatus(200);
         } 
         else {
@@ -174,7 +227,7 @@ router.post('/login/', async (req, res) => {
     }
 });
 
-router.post('/otp/', async (req, res) => {
+router.post('/otp', validateParameters(validationSchemas.otpSchema), async (req, res) => {
     console.log(req.body); // proves backend received data
     const { username, otp, type } = req.body;
     
@@ -182,24 +235,21 @@ router.post('/otp/', async (req, res) => {
 
     switch (type) {
         case 'staff':
-            const UCs = mongoose.model('UCs', UCAccountSchema);
-
-            account = await UCs.findOne({username: username}).exec();
+            account = await UCAccount.findOne({Username: username}).exec();
             break;
         case 'student':
-            const Students = mongoose.model('Students', studentSchema);
-
-            account = await Students.findOne({username: username}).exec();
+            account = await CapstoneStudent.findOne({Username: username}).exec();
             break;
     }
 
     if (account)
     {
-        if (account.otp === otp) {
-            account.otp = null;
+        if (account.OTP === otp) {
+            account.OTP = null;
             await account.save();
 
-            // generate session token
+            const token = await createWebToken(account.Username, type);
+            res.cookie("token", token, {withCredentials: true, httpOnly: false});
             res.sendStatus(200);
         } 
         else {
@@ -211,41 +261,44 @@ router.post('/otp/', async (req, res) => {
     }
 });
 
-router.post('/email/', async (req, res) => {
-    console.log(req.body); // proves backend received data
-    // from user session + body
-    const { newEmail, username, type } = req.body;
+router.post('/email', validateParameters(validationSchemas.emailSchema), verifySession, async (req, res) => {
+    // From user session + body
+
+    const decodedToken = jwt.verify(req.cookies.token, process.env.WEB_TOKEN_KEY);
+
+    const username = decodedToken.username;
+    const type = decodedToken.userType;
+
+    const { newEmail } = req.body;
 
     var account = null;
 
     switch (type) {
         case 'staff':
-            const UCs = mongoose.model('UCs', UCAccountSchema);
-
-            account = await UCs.findOne({username: username}).exec();
+            account = await UCAccount.findOne({Username: username}).exec();
             break;
         case 'student':
-            const Students = mongoose.model('Students', studentSchema);
-
-            account = await Students.findOne({username: username}).exec();
+            account = await CapstoneStudent.findOne({Username: username}).exec();
             break;
     }
 
     if (account)
     {
-        account.email = newEmail;
+        account.Email = newEmail;
 
         var OTP = randomstring.generate({length: 5, charset: 'numeric'});
         
         await sendOTPEmail(newEmail, OTP);
 
+        account.OTP = OTP;
+        await account.save();
         // store OTP in schema, then delete once log-in is successful
         // OTP necessary to verify email, otherwise Curtin email is used, though new email is stored
         res.sendStatus(200);
     } 
     else {
-        res.status(401).send('Username not found');
+        res.status(400).send('Account not found');
     }
 });
 
-module.exports = router;
+module.exports = { router, verifySession };

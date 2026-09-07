@@ -1,65 +1,79 @@
 import { useState } from "react";
 import "./Projects.css";
+import AddProject from "./AddProject";
+
 function Projects() {
   const [selectedProject, setSelectedProject] = useState(null);
 
-  const projects = [
-    {
-      id: 1,
-      name: "Project 1",
-      description: "description 1"
-    },
-    {
-      id: 2,
-      name: "Project 2",
-      description: "description 2"
-    },
-    {
-      id: 3,
-      name: "Project 3",
-      description: "description 3"
-    }
-  ];
+  const [projects, setProjects] = useState([
+
+  ]);
+
+  const [showAddProject, setShowAddProject] = useState(false);
+
+  const addProject = (newProject) => {
+    setProjects((previousProjects) => [
+      ...previousProjects,
+      {
+        id: previousProjects.length + 1,
+        ...newProject
+      }
+    ]);
+
+    setShowAddProject(false);
+  };
 
   return (
     <div className="projects-box">
       <div className="projects-header">
         <h4>Available Projects</h4>
-        <button className="add-project-btn">
+        <button
+          className="add-project-btn"
+          onClick={() => setShowAddProject(true)}
+        >
           + Add Project
         </button>
+        {showAddProject && (
+          <AddProject
+            onAddProject={addProject}
+            onCancel={() => setShowAddProject(false)}
+          />
+        )}
       </div>
         <div className="projects-container">
-          <div className="project-list">
-            {projects.map((project) => (
-              <div
-                key={project.id}
-                className="project-item"
-                onClick={() => setSelectedProject(project)}
-              >
-                {project.name}
-              </div>
-            ))}
 
+          <div className="project-list-section">
+            <div className="project-list-header">
+              <h3>Projects List</h3>
+            </div>
+
+            <div className="project-list">
+              {projects.map((project) => (
+                <div
+                  key={project.id}
+                  className="project-item"
+                  onClick={() => setSelectedProject(project)}
+                >
+                  {project.name}
+                </div>
+              ))}
+            </div>
           </div>
 
-
-          {/* Right side */}
           <div className="project-description">
-            <h3>Project Description</h3>
+            <h3>Description</h3>
 
             {selectedProject ? (
               <>
-                <p>{selectedProject.name}</p>
                 <p>{selectedProject.description}</p>
               </>
             ) : (
               <p>Select a project to view details.</p>
             )}
-
           </div>
 
         </div>
+
     </div>
   );
 }
