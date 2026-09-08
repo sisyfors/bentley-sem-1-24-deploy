@@ -32,13 +32,13 @@ const verifySession = async (req, res, next) => {
   if (token) {
     jwt.verify(token, process.env.WEB_TOKEN_KEY, (err, decodedToken) => {
       if (err) {
-        return res.status(401).send('Invalid token');
+        return res.status(401).json({ message: "Invalid token" });
       } else {
         next();
       }
     });
   } else {
-    res.status(401).send('Not authorised');
+    res.status(401).json({ message: "Not authorised" });
     throw new Error('Not authorized, no token');
   }
 };
@@ -138,9 +138,9 @@ const validateParameters = (schema, property) => {
             next();
         } else {
             const { details } = error;
-            const message = details.map(error => error.message).join(',');
+            const errorMsg = details.map(error => error.message).join(',');
 
-            res.status(422).json({ error: message });
+            res.status(422).json({ message: errorMsg });
         }
     };
 };
