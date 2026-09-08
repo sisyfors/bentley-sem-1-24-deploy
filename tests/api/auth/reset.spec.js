@@ -31,7 +31,8 @@ test.describe('Verify Reset Password API', () => {
         const response = await apiContext.post('', {data: newPassword});
 
         expect(response.status()).toEqual(401);
-        expect(await response.text()).toEqual('Not authorised');
+        const responseMessage = await response.json();
+        expect(responseMessage.message).toEqual('Not authorised');
     });
 
     test('Mismatching passwords - should return error code', async ({ request }) => {

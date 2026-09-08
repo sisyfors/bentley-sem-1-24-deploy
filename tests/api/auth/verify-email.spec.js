@@ -30,7 +30,8 @@ test.describe('Verify Personal Email Verification API', () => {
         const apiCall = await apiContext.post('', {data: otp});
 
         expect(apiCall.status()).toEqual(401);
-        expect(await apiCall.text()).toEqual('Not authorised');
+        const responseMessage = await apiCall.json();
+        expect(responseMessage.message).toEqual('Not authorised');
     });
 
     test('Staff account - should return error code', async ({ request }) => {       

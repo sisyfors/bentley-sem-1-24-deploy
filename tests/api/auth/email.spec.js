@@ -30,7 +30,8 @@ test.describe('Verify Setting Personal Email API', () => {
         const apiCall = await apiContext.post('', {data: credentials});
 
         expect(apiCall.status()).toEqual(401);
-        expect(await apiCall.text()).toEqual('Not authorised');
+        const responseMessage = await apiCall.json();
+        expect(responseMessage.message).toEqual('Not authorised');
     });
 
     test('Staff account - should return error code', async ({ request }) => {       
