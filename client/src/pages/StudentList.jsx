@@ -1,4 +1,5 @@
 /* UC add student list via CSV */
+import './StudentList.css'
 import { useState } from "react";
 
 function StudentList() {
@@ -57,24 +58,32 @@ function StudentList() {
     };
 
     return(
-        <div className="form-container">
-            <div className="form-box">
-                <form onSubmit={handleSubmit}>
+        <div className="studentlist-container">
+              <h1> 
+                Add Student List
+              </h1>
+        
+              <div>
+                <div className="form-container">
+                    <div className="form-box">
+                        <form onSubmit={handleSubmit}>
             
-                    <label> Upload Student List </label>    
-                    <input
-                        type="file"
-                        name="document"
-                        accept=".csv"
-                        onChange={inputChanges}
-                        required
-                    />
+                            <label> Upload Student List </label>    
+                            <input
+                                type="file"
+                                name="document"
+                                accept=".csv"
+                                onChange={inputChanges}
+                                required
+                            />
 
-                    <button type="submit">
-                        Confirm
-                    </button>    
-                </form>
-            </div>
+                            <button type="submit">
+                                Confirm
+                            </button>    
+                        </form>
+                    </div>
+                </div>
+              </div>
         </div>
     )
 
