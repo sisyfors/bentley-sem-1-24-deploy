@@ -28,6 +28,7 @@ function AddStudents() {
         console.log("Confirm button clicked");
         console.log("selected file: ", studentList.document)
         alert("Student List uploaded successfully!");
+        navigate("/ucdashboard/isad3000/students");
  
         /* send CSV file to the backend and store in the database
         const saveData = new FormData();
@@ -79,7 +80,7 @@ function AddStudents() {
 
                             <button type="submit">
                                 Confirm
-                            </button>    
+                            </button>
                         </form>
                     </div>
                 </div>

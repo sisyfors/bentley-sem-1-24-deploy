@@ -26,6 +26,7 @@ function AddStudent() {
             if (response.status == 200)
             {
                 alert("Student added to the list successfully!");
+                navigate("/ucdashboard/isad3000/students");
             } else if (response.status == 400)
             {
                 alert("invalid student given, please make sure the student is valid before submitting")
