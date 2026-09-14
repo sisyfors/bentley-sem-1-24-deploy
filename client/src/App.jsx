@@ -6,6 +6,7 @@ import ISAD3000 from "./pages/ISAD3000";
 import StudentList  from './pages/StudentList';
 import DownloadApplications from './pages/DownloadApplications'
 import AddStudents  from './pages/AddStudents';
+import AddStudent  from './pages/AddStudent';
 
 import { Routes, Route, Link } from "react-router-dom"
 
@@ -63,6 +64,7 @@ function App() {
       <Route path="/ucdashboard" element={<UC_Dashboard />} />
       <Route path="/ucdashboard/isad3000/students" element={<StudentList />} />
       <Route path="/ucdashboard/isad3000/addstudents" element={<AddStudents />} />
+      <Route path="/ucdashboard/isad3000/addstudent" element={<AddStudent />} />
       <Route path="/ucdashboard/work3008" element={<WORK3008 />} />
       <Route path="/ucdashboard/work3008/applications" element={<DownloadApplications />} />
       <Route
