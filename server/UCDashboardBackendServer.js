@@ -90,9 +90,9 @@ app.post('/api/POST_student', async (req, res) => {
     }
 
     const newStudent = new CapstoneStudent(studentDBModel)
-    await newStudent.save()
-
-    res.status(200).json({ 
+    //await newStudent.save()
+    console.log("yipee")
+    return res.status(200).json({ 
         message: "Data received successfully"
     }).end()
     
@@ -201,7 +201,7 @@ app.post('/api/SaveStudentGroups', async (req, res) => {
 
 //function to check if a student exists in the capstone student database. duplicates are determined by student ID
 async function studentExistsInDB(inStudent){
-    const student = await CapstoneStudent.findOne({ StudentID: inStudent.StudentID }).lean()
+    const student = await CapstoneStudent.findOne({ StudentID: inStudent.studentId }).lean()
     if (student == null) {
         return false
     } else {

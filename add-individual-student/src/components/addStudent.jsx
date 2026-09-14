@@ -11,6 +11,48 @@ function AddStudent() {
         unit: []
     });
 
+    async function PostStudent (){
+        try 
+        {
+            const response = await fetch('http://localhost:50000/api/POST_student', {
+                method: 'POST',
+                headers: {
+                'Content-Type': 'application/json', // Tells backend to parse as JSON
+                },
+                body: JSON.stringify(studentDetails), // Converts JS object to JSON string
+            });
+
+            if (response.status == 200)
+            {
+                alert("Student added to the list successfully!");
+            } else if (response.status == 400)
+            {
+                alert("invalid student given, please make sure the student is valid before submitting")
+            } else if (response.status == 401)
+            {
+                alert("that student already exists in the database")
+            } else{
+                //getting here is very bad
+                alert("unknown outcome occurred")
+            }
+
+            const result = await response.json();
+            console.log("Server response:", result.message);
+
+            
+        } catch (error) 
+        {
+            console.error("Error sending data:", error);
+        }
+    }
+
+
+
+
+
+
+
+
     const inputChanges = (e) => {
         const { name, value, unitOptions } = e.target;
         
@@ -34,7 +76,7 @@ function AddStudent() {
     const handleSubmit = (e) => {
         e.preventDefault();
         console.log(studentDetails);
-        alert("Student added to the list successfully!");
+        PostStudent();
     };
 
     return(
