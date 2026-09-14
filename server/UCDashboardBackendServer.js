@@ -4,21 +4,20 @@
 
 const express = require("express")
 const mongoose = require("mongoose")
-const ucAccounts = require("./Schemas.js")
 const cors = require ("cors")
 const {CapstoneStudent, Group, ProjectApplication} = require ("../models")
 const GroupWorkProjects = require ("../models/Project.js")
 const { group } = require("node:console")
 const fs = require ("node:fs")
 const AdmZip = require("adm-zip");
+const { boolean } = require("joi")
 
 
 
 const app = express()
-const PORT = 50000
-const DATABASE_PATH = "mongodb://liam_db_user@admin:liam_db_user@ac-h3febtm-shard-00-00.17jnurt.mongodb.net:27017,ac-h3febtm-shard-00-01.17jnurt.mongodb.net:27017,ac-h3febtm-shard-00-02.17jnurt.mongodb.net:27017/?ssl=true&replicaSet=atlas-12gxsl-shard-0&authSource=admin&appName=Capstone24"
-
-mongoose.connect(DATABASE_PATH)
+const PORT = 50000    
+const DATABASE_PATH = "mongodb://liam_db_user:LiamPassword@ac-h3febtm-shard-00-00.17jnurt.mongodb.net:27017,ac-h3febtm-shard-00-01.17jnurt.mongodb.net:27017,ac-h3febtm-shard-00-02.17jnurt.mongodb.net:27017/?ssl=true&replicaSet=atlas-12gxsl-shard-0&authSource=admin&appName=Capstone24"
+mongoose.connect(DATABASE_PATH, {dbName: 'ccp24'});
 
 app.use(
     cors({
@@ -58,28 +57,41 @@ app.get('/api/test_GET_UCs', async (req, res) => {
 
 //
 app.post('/api/POST_student', async (req, res) => {
-    
-    const StudentObject = JSON.parse(req.body)
-    console.log(StudentObject)
+    console.log(req.body)
+    //const StudentObject = JSON.parse(req.body)
+    const StudentObject = req.body
+    let studentDBModel = null;
+    try
+    {
     //check to see if the student is valid
     //theoretically this chould never occur as it would be nice to have validation on the frontend rather than the backend
-    if (notValidStudent(StudentObject)){
-        return res.status(400).json({
-            message: "the student given wasn't valid"
-        }).end()
+        studentDBModel = createValidStudent(StudentObject)
+        console.log(studentDBModel)
+            
+    } catch (exception)
+    {
+        console.log("student failed to save, was invalid")
+        //a lot of different probalems can get us here, but most of them are just the user inputting an invalid student
+        if (exception instanceof TypeError)
+        {
+            return res.status(400).json({
+                message: "object given was not a valid student"
+            }).end()
+        }
     }
 
     //next we see if the student exists in the database already, if they do then we don't want a duplicate of them
-    if (studentExistsInDB(StudentObject))
+    const isInDb = await studentExistsInDB(StudentObject)
+    if (isInDb)
     {
         return res.status(401).json({
             message: "student already exists"
         }).end()
-        
     }
 
-    const newStudent = new CapstoneStudent(StudentObject)
-    newStudent.save()
+    const newStudent = new CapstoneStudent(studentDBModel)
+    await newStudent.save()
+
     res.status(200).json({ 
         message: "Data received successfully"
     }).end()
@@ -188,14 +200,44 @@ app.post('/api/SaveStudentGroups', async (req, res) => {
 
 
 //function to check if a student exists in the capstone student database. duplicates are determined by student ID
-async function  studentExistsInDB(inStudent){
-    const student = await CapstoneStudent.findOne({ StudentID: inStudent.StudentID })
-
+async function studentExistsInDB(inStudent){
+    const student = await CapstoneStudent.findOne({ StudentID: inStudent.StudentID }).lean()
     if (student == null) {
-        return true
-    } else {
         return false
+    } else {
+        return true
     }
+}
+
+function createValidStudent(inStudent)
+{
+    //if any of the data points given are invalid we throw an error
+    /*
+    if (!inStudent.Email.includes("@"))
+    {
+        throw TypeError
+    }
+    if (inStudent.length != 8)
+    {
+        throw TypeError
+    }*/
+    //console.log(Object.values(inStudent))
+    //console.log(Object.keys(inStudent))
+    //console.log(Object.hasOwn(inStudent, "email"));
+    
+    const mongooseStudent = 
+    {
+        Email: inStudent.email,
+        Group: '0', //for all students Group 0 means no group
+        Name: inStudent.firstName + ' ' + inStudent.lastName,
+        Password: 'Password1',//TODO: randomly generate passwords
+        StudentID: inStudent.studentId,
+        TermsAccepted: 0,
+        Unit: inStudent.unit[0], //the unit is a list, we don't need to fuck with that rn
+        Username: inStudent.studentId, //the username needs to be unique. idk if using the student ID is good longterm, but it helps shortterm
+        Salt: 'idk' //I dont understand the salt other than it helps keep passwords safe. we don't need to set it properly yet
+    }
+    return mongooseStudent
 }
 
 
