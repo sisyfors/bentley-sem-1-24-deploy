@@ -90,7 +90,7 @@ app.post('/api/POST_student', async (req, res) => {
     }
 
     const newStudent = new CapstoneStudent(studentDBModel)
-    //await newStudent.save()
+    await newStudent.save()
     console.log("yipee")
     return res.status(200).json({ 
         message: "Data received successfully"

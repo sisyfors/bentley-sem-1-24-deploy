@@ -1,15 +1,18 @@
 /* add individual student to the student list */
 import './AddStudent.css'
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function AddStudent() {
+    const navigate = useNavigate();
+
     const [studentDetails, setStudentDetails] = useState({
         studentId: "",
         lastName: "",
         firstName: "",
         email: "",
         course: "",
-        unit: []
+        unit: "",
     });
 
     async function PostStudent (){
@@ -35,6 +38,7 @@ function AddStudent() {
                 alert("that student already exists in the database")
             } else{
                 //getting here is very bad
+                console.log(response);
                 alert("unknown outcome occurred")
             }
 
@@ -56,23 +60,12 @@ function AddStudent() {
 
 
     const inputChanges = (e) => {
-        const { name, value, unitOptions } = e.target;
+        const { name, value } = e.target;
         
-        if (name !== "unit"){
-           setStudentDetails(prevDetails => ({
-                ...prevDetails,
-                [name]: value
-            })); 
-        }
-        else {
-            const selectedUnits = Array.from(selectedUnits, option => option.value);
-
-            setStudentDetails(prevDetails => ({
-                ...prevDetails,
-                unit: selectedUnits
-            })); 
-        }
-        
+        setStudentDetails(prevDetails => ({
+            ...prevDetails,
+            [name]: value
+        })); 
     };
 
     const handleSubmit = (e) => {
@@ -164,28 +157,34 @@ function AddStudent() {
                             <label> Select enrolled unit </label>
 
                             <label className="enrol-option"> 
-                                <input 
-                                    type="checkbox"
+                                <input
+                                    type="radio"
                                     name="unit"
                                     value="ISAD3000"
+                                    onChange={inputChanges}
+                                    required
                                 />
                                 <span> ISAD3000 Capstone Computing Project 1 </span>
                             </label>
 
                             <label className="enrol-option"> 
                                 <input 
-                                    type="checkbox"
+                                    type="radio"
                                     name="unit"
                                     value="ISAD3001"
+                                    onChange={inputChanges}
+                                    required
                                 />
                                 <span> ISAD3001 Capstone Computing Project 2 </span>
                             </label>
 
                             <label className="enrol-option"> 
                                 <input 
-                                    type="checkbox"
+                                    type="radio"
                                     name="unit"
                                     value="ICTE3002"
+                                    onChange={inputChanges}
+                                    required
                                 />
                                 <span> ICTE3002 Human Computer Interface </span>
                             </label>
