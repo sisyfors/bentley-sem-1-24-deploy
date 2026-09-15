@@ -1,5 +1,6 @@
 import "./StudentList.css";
 import logo from "./logo.webp";
+import Dropdown from "./Dropdown";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -119,17 +120,23 @@ function StudentList() {
               </li>
             ))}
 
-            <li
-              onClick={() => navigate("/ucdashboard/isad3000/students")}
-            >
-              Student List
-            </li>
-
-            <li
-              onClick={() => navigate("/ucdashboard/isad3000/groups")}
-            >
-              Group Allocation
-            </li>
+            <Dropdown
+                          unitName="ISAD3000"
+                          items={[
+                            {
+                              name: "Announcements",
+                              path: "/ucdashboard/isad3000/announcements"
+                            },
+                            {
+                              name: "Student List",
+                              path: "/ucdashboard/isad3000/students"
+                            },
+                            {
+                              name: "Group Allocation",
+                              path: "/ucdashboard/isad3000/groups"
+                            },
+                          ]}
+            />
           </ul>
         </nav>
       </aside>

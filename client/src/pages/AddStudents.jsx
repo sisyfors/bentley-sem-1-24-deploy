@@ -1,8 +1,11 @@
 /* UC add student list via CSV */
 import './AddStudents.css'
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function AddStudents() {
+    const navigate = useNavigate();
+    
     const [studentList, setStudentList] = useState({
         document: null
     });
