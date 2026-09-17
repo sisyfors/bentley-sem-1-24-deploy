@@ -4,13 +4,18 @@ import "./AddProject.css";
 function AddProject({ onAddProject, onCancel }) {
   const [projectName, setProjectName] = useState("");
   const [description, setDescription] = useState("");
+  const [client, setClient] = useState("");
+  const [clientEmail, setClientEmail] = useState("");
+
 
   const handleSubmit = (event) => {
     event.preventDefault();
 
     const newProject = {
       name: projectName,
-      description: description
+      description: description,
+      client: client,
+      clientEmail: clientEmail
     };
 
     onAddProject(newProject);
@@ -53,6 +58,26 @@ function AddProject({ onAddProject, onCancel }) {
                 onChange={(event) => setDescription(event.target.value)}
                 placeholder="Project Description"
                 rows="5"
+                required
+              />
+            </label>
+
+            <label>
+              Client
+              <textarea
+                value={client}
+                onChange={(event) => setClient(event.target.value)}
+                placeholder="Client Name"
+                required
+              />
+            </label>
+
+            <label>
+              Client Email
+              <textarea
+                value={clientEmail}
+                onChange={(event) => setClientEmail(event.target.value)}
+                placeholder="Client Email"
                 required
               />
             </label>

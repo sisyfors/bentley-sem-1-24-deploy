@@ -23,6 +23,13 @@ function Projects() {
     setShowAddProject(false);
   };
 
+   const deleteProject = (project) => {
+    setProjects(projects.filter(proj => proj !== project));
+    if (selectedProject === project) {
+      setSelectedProject(null);
+    }
+  };
+
   return (
     <div className="projects-box">
       <div className="projects-header">
@@ -60,15 +67,49 @@ function Projects() {
             </div>
           </div>
 
-          <div className="project-description">
-            <h3>Description</h3>
+          <div className="project-details">
+            <h3>Details</h3>
 
             {selectedProject ? (
               <>
-                <p>{selectedProject.description}</p>
+                <p><strong>Description: </strong>{selectedProject.description}</p>
               </>
             ) : (
               <p>Select a project to view details.</p>
+            )}
+
+            {selectedProject ? (
+              <>
+                <p><strong>Client: </strong>{selectedProject.client}</p>
+              </>
+            ) : (
+              <p></p>
+            )}
+
+            {selectedProject ? (
+              <>
+                <p><strong>Contact: </strong>{selectedProject.clientEmail}</p>
+              </>
+            ) : (
+              <p></p>
+            )}
+
+            {selectedProject && (
+              <div className="round-buttons">
+                <button
+                  className="delete-project-btn"
+                  onClick={() => deleteProject(selectedProject)}
+                >
+                  Delete Project
+                </button>
+
+                <button
+                  className="edit-project-btn"
+                  onClick={() => openDeleteProject(round)}
+                >
+                  Edit Project
+                </button>
+              </div>
             )}
           </div>
 
