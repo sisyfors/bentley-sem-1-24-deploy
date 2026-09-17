@@ -50,6 +50,7 @@ function PreferencePage() {
                 <label> Course Weighted Average (CWA) </label>
                 <input 
                     type="number"
+                    step="0.01"
                     name="CWA"
                     value={studentDetails.CWA}
                     onChange={inputChanges}
