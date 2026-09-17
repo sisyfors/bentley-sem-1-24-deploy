@@ -1,24 +1,47 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./AddProject.css";
 
-function AddProject({ onAddProject, onCancel }) {
+function AddProject({ 
+  onAddProject, 
+  onEditProject,
+  onCancel,
+  existingProject
+ }) {
   const [projectName, setProjectName] = useState("");
   const [description, setDescription] = useState("");
   const [client, setClient] = useState("");
   const [clientEmail, setClientEmail] = useState("");
 
+  useEffect(() => {
+    if (existingProject) {
+      setProjectName(existingProject.name || "");
+      setDescription(existingProject.description || "");
+      setClient(existingProject.client || "");
+      setClientEmail(existingProject.clientEmail || "");
+    } else {
+      setProjectName("");
+      setDescription("");
+      setClient("");
+      setClientEmail("");
+    }
+  }, [existingProject]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    const newProject = {
+    const projectData = {
+      ...existingProject,
       name: projectName,
       description: description,
       client: client,
       clientEmail: clientEmail
     };
 
-    onAddProject(newProject);
+    if (existingProject) {
+      onEditProject(projectData);
+    } else {
+      onAddProject(projectData);
+    }
   };
 
   return (
@@ -26,7 +49,7 @@ function AddProject({ onAddProject, onCancel }) {
       <div className="add-project-form">
 
         <div className="add-project-header">
-          <h2>Add New Project</h2>
+          <h2>{existingProject ? "Edit Project" : "Add New Project"}</h2>
 
           <button
             type="button"
@@ -96,7 +119,7 @@ function AddProject({ onAddProject, onCancel }) {
               type="submit"
               className="create-project-btn"
             >
-              Add Project
+              {existingProject ? "Save Changes" : "Add Project"}
             </button>
           </div>
 

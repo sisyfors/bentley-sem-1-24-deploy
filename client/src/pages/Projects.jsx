@@ -4,23 +4,49 @@ import AddProject from "./AddProject";
 
 function Projects() {
   const [selectedProject, setSelectedProject] = useState(null);
-
-  const [projects, setProjects] = useState([
-
-  ]);
-
+  const [projects, setProjects] = useState([]);
   const [showAddProject, setShowAddProject] = useState(false);
+  const [editingProject, setEditingProject] = useState(null);
 
   const addProject = (newProject) => {
+    const projectWithId = {
+      ...newProject,
+      unique_id: Date.now()
+    };
+
     setProjects((previousProjects) => [
       ...previousProjects,
       {
         id: previousProjects.length + 1,
-        ...newProject
+        ...projectWithId
       }
     ]);
 
     setShowAddProject(false);
+  };
+
+  const editProject = (updatedProject) => {
+    setProjects((previousProjects) =>
+      previousProjects.map((project) => {
+        if (project.unique_id === updatedProject.unique_id) {
+          if (selectedProject === project) {
+            setSelectedProject(updatedProject);
+          }
+          return updatedProject;
+        } else {
+          return project;
+        }
+      }
+      )
+    );
+
+    setEditingProject(null);
+    setShowAddProject(false);
+  };
+
+  const openEditProject = (project) => {
+    setEditingProject(project);
+    setShowAddProject(true);
   };
 
    const deleteProject = (project) => {
@@ -36,14 +62,21 @@ function Projects() {
         <h4>Available Projects</h4>
         <button
           className="add-project-btn"
-          onClick={() => setShowAddProject(true)}
+          onClick={() => {
+            setEditingProject(null);
+            setShowAddProject(true);}}
         >
           + Add Project
         </button>
+
         {showAddProject && (
           <AddProject
+            existingProject={editingProject}
             onAddProject={addProject}
-            onCancel={() => setShowAddProject(false)}
+            onEditProject={editProject}
+            onCancel={() => {
+              setEditingProject(null);
+              setShowAddProject(false);}}
           />
         )}
       </div>
@@ -95,7 +128,7 @@ function Projects() {
             )}
 
             {selectedProject && (
-              <div className="round-buttons">
+              <div className="project-buttons">
                 <button
                   className="delete-project-btn"
                   onClick={() => deleteProject(selectedProject)}
@@ -105,7 +138,7 @@ function Projects() {
 
                 <button
                   className="edit-project-btn"
-                  onClick={() => openDeleteProject(round)}
+                  onClick={() => openEditProject(selectedProject)}
                 >
                   Edit Project
                 </button>
