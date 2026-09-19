@@ -8,6 +8,7 @@ const {
     Project,
     Round,
     CapstoneStudent,
+    Group,
 } = require("../models/index.js");
 
 const verifyStudentSession = require('./auth').verifyStudentSession;
@@ -17,7 +18,7 @@ const validationSchemas = {
         ID: joi.number().required(),
     }),
     getProjectSchema: joi.object({
-        id: joi.number().required(),
+        id: joi.string().required(),
     }),
     getProjectsSchema: joi.object({
         roundNum: joi.number().required(),
@@ -66,9 +67,15 @@ student.get('/project/:ID', validateParameters(validationSchemas.getProjectSchem
         const decodedToken = jwt.verify(req.cookies.token, process.env.WEB_TOKEN_KEY);
         const username = decodedToken.username;
 
-        const user = await UCAccount.findOne({Username: username}).lean();
+        const user = await CapstoneStudent.findOne({Username: username}).lean();
 
-        if (user.Group === 0) {
+        if (user.Group !== 0) {
+            const group = await Group.findOne({ GroupNumber: user.Group }).lean();
+
+            if (group.Project !== project.ID) {
+                delete project['ClientEmail'];
+            }
+        } else {
             delete project['ClientEmail'];
         }
 
@@ -82,11 +89,21 @@ student.get('/projects/:round', validateParameters(validationSchemas.getProjectS
     const round = await Round.findOne({ RoundNumber: req.params.round }).lean();
 
     if (round === null) {
+        res.sendStatus(500);
+    }
+    else if (projects.length === 0) {
         res.sendStatus(404);
-    } else {
+    }
+    else {
         const decodedToken = jwt.verify(req.cookies.token, process.env.WEB_TOKEN_KEY);
         const username = decodedToken.username;
         const user = await UCAccount.findOne({Username: username}).lean();
+
+        let group;
+
+        if (user.Group !== 0) {
+            group = await Group.findOne({ GroupNumber: user.Group }).lean();
+        }
 
         projects.forEach((project) => {
             delete project['ID'];
@@ -94,6 +111,10 @@ student.get('/projects/:round', validateParameters(validationSchemas.getProjectS
 
             if (user.Group === 0) {
                 delete project['ClientEmail'];
+            } else {
+                if (group.Project !== project.ID) {
+                    delete project['ClientEmail'];
+                }
             }
         });
 
