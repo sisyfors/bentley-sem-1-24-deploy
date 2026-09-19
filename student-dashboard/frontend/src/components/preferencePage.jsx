@@ -26,9 +26,39 @@ function PreferencePage() {
         }));
     };
 
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        try {
+            const response = await fetch(
+                "http://localhost:3000/api/preferences",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(studentDetails)
+                }
+            );
+
+            const data = await response.json();
+            if(!response.ok) {
+                alert(data.message);
+            }
+            else {
+                console.log("Submit button clicked");
+                alert("Preferences submitted successfully!");
+            }
+        }
+        catch (err) {
+            console.error("Unable to upload document: ", err);
+            alert("Failed to submit!");
+        }
+    };
+
     return (
         <div className="pref-page">
-            <div className="pref-container">
+            <div className="pref-container" onSubmit={handleSubmit}>
                 <label> Student ID </label>
                 <input 
                     type="number"
@@ -50,7 +80,6 @@ function PreferencePage() {
                 <label> Course Weighted Average (CWA) </label>
                 <input 
                     type="number"
-                    step="0.01"
                     name="CWA"
                     value={studentDetails.CWA}
                     onChange={inputChanges}
@@ -80,147 +109,62 @@ function PreferencePage() {
                     </label>
 
                     <label> Select your course / major </label>
-                    <label className="radio-opt">
-                        <input 
-                            type="radio"
-                            name="major"
-                            value="opt1"
-                            onChange={inputChanges}
-                        />
-                        Bachelor of Computing (Computer Science) 
-                    </label>
-
-                    <label className="radio-opt">
-                        <input 
-                            type="radio"
-                            name="major"
-                            value="opt2"
-                            onChange={inputChanges}
-                        />
-                        Bachelor of Computing (Cyber Security)
-                    </label>
-
-                    <label className="radio-opt">
-                        <input 
-                            type="radio"
-                            name="major"
-                            value="opt3"
-                            onChange={inputChanges}
-                        />
-                        Bachelor of Computing (Software Engineering)
-                    </label>
-
-                    <label className="radio-opt">
-                        <input 
-                            type="radio"
-                            name="major"
-                            value="opt4"
-                            onChange={inputChanges}
-                        />
-                        Bachelor of Information Technology
-                    </label>
-
-                    <label className="radio-opt">
-                        <input 
-                            type="radio"
-                            name="major"
-                            value="opt5"
-                            onChange={inputChanges}
-                        />
-                        Other
-                    </label> 
+                    {["opt1", "opt2", "opt3", "opt4", "opt5"].map((opt, i) => {
+                        const labels = [
+                            "Bachelor of Computing (Computer Science)",
+                            "Bachelor of Computing (Cyber Security)",
+                            "Bachelor of Computing (Software Engineering)",
+                            "Bachelor of Information Technology",
+                            "Other"
+                        ];
+                        return (
+                            <label className="radio-opt" key={opt}>
+                                <input 
+                                    type="radio"
+                                    name="major"
+                                    value="{opt}"
+                                    onChange={inputChanges}
+                                />
+                                {labels[i]}
+                            </label>
+                        );
+                    })}
                 </div>
 
-                <label> 1st Preference - Name of student you would like to be in a group with </label>
-                <input
-                    type="text"
-                    name="pref1"
-                    value={studentDetails.pref1}
-                    onChange={inputChanges}
-                    placeholder="1st Preference"
-                />
+                {[1, 2, 3, 4, 5].map((n) => (
+                    <div key={`pref${n}`}>
+                        <label>
+                            {n}{n === 1 ? "st " : n === 2 ? "nd " : n === 3 ? "rd " : "th "} 
+                            Preference - Name of student you would like to be in a group with
+                        </label>
 
-                <label> 2nd Preference - Name of student you would like to be in a group with </label>
-                <input
-                    type="text"
-                    name="pref2"
-                    value={studentDetails.pref2}
-                    onChange={inputChanges}
-                    placeholder="2nd Preference"
-                />
+                        <input
+                            type="text"
+                            name={`pref${n}`}
+                            value={studentDetails[`pref${n}`]}
+                            onChange={inputChanges}
+                            placeholder={`${n}${n === 1  ? "st" : n === 2 ? "nd" : n === 3 ? "rd" : "th"} Preferences`}
+                        />
+                    </div>
+                ))}
 
-                <label> 3rd Preference - Name of student you would like to be in a group with </label>
-                <input
-                    type="text"
-                    name="pref3"
-                    value={studentDetails.pref3}
-                    onChange={inputChanges}
-                    placeholder="3rd Preference"
-                />
+                {[1, 2, 3, 4, 5].map((n) => (
+                    <div key={`dislikePref${n}`}>
+                        <label>
+                            {n}{n === 1 ? "st " : n === 2 ? "nd" : n === 3 ? "rd" : "th"} 
+                            Preference - Name of student you would NOT like to be in a group with
+                        </label>
 
-                <label> 4th Preference - Name of student you would like to be in a group with </label>
-                <input
-                    type="text"
-                    name="pref4"
-                    value={studentDetails.pref4}
-                    onChange={inputChanges}
-                    placeholder="4th Preference"
-                />
-
-                <label> 5th Preference - Name of student you would like to be in a group with </label>
-                <input
-                    type="text"
-                    name="pref5"
-                    value={studentDetails.pref5}
-                    onChange={inputChanges}
-                    placeholder="5th Preference"
-                />
-
-                <label> 1st Preference - Name of student you would NOT like to be in a group with </label>
-                <input
-                    type="text"
-                    name="dislikePref1"
-                    value={studentDetails.dislikePref1}
-                    onChange={inputChanges}
-                    placeholder="1st Preference"
-                />
-
-                <label> 2nd Preference - Name of student you would NOT like to be in a group with </label>
-                <input
-                    type="text"
-                    name="dislikePref2"
-                    value={studentDetails.dislikePref2}
-                    onChange={inputChanges}
-                    placeholder="2nd Preference"
-                />
-
-                <label> 3rd Preference - Name of student you would NOT like to be in a group with </label>
-                <input
-                    type="text"
-                    name="dislikePref3"
-                    value={studentDetails.dislikePref3}
-                    onChange={inputChanges}
-                    placeholder="3rd Preference"
-                />
-
-                <label> 4th Preference - Name of student you would NOT like to be in a group with </label>
-                <input
-                    type="text"
-                    name="dislikePref4"
-                    value={studentDetails.dislikePref4}
-                    onChange={inputChanges}
-                    placeholder="4th Preference"
-                />
-
-                <label> 5th Preference - Name of student you would NOT like to be in a group with </label>
-                <input
-                    type="text"
-                    name="dislikePref5"
-                    value={studentDetails.dislikePref5}
-                    onChange={inputChanges}
-                    placeholder="5th Preference"
-                />
-
+                        <input
+                            type="text"
+                            name={`dislikePref${n}`}
+                            value={studentDetails[`dislikePref${n}`]}
+                            onChange={inputChanges}
+                            placeholder={`${n}${n === 1  ? "st" : n === 2 ? "nd" : n === 3 ? "rd" : "th"} Preferences`}
+                        />
+                    </div>
+                ))}
+                
                 <button type="submit">
                     Submit
                 </button>

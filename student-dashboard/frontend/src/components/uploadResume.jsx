@@ -29,14 +29,13 @@ function UploadResume({ applicationUploaded }) {
         applicationUploaded(application.document);
         alert("Resume or Cover Letter uploaded successfully!");
  
-        /* send pdf file to the backend and store in the database
         const saveData = new FormData();
 
         saveData.append("document", application.document);
 
         try {
             const response = await fetch(
-                "http://localhost:3000",
+                "http://localhost:3000/api/applications/upload",
                 {
                     method: "POST",
                     body: saveData
@@ -54,7 +53,7 @@ function UploadResume({ applicationUploaded }) {
         }
         catch (err) {
             console.error("Unable to upload document: ", err);
-        } */
+        } 
     };
 
     return(

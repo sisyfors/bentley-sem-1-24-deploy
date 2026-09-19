@@ -8,17 +8,28 @@ import PreferencePage from "./components/preferencePage";
 
 function App() {
 
-  const [rounds, setRounds] = useState([
-    // for temporarily only
-    { id: 1, name: "Round 1", status: "OPEN" },
-    { id: 2, name: "Round 2", status: "CLOSED" },
-    { id: 3, name: "Round 3", status: "OPEN" }
-  ]);
-  const [status, setStatus] = useState("OPEN");
+  const [appStatus, setAppStatus] = useState("Not Applied");
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [showApplication, setShowApplication] = useState(false);
+  const [upload, setUpload] = useState(null);
+
+  const handleViewProject = (project) => {
+    setSelectedProject(project);
+    setShowApplication(false);
+  };
+
+  const handleApply = () => {
+    setShowApplication(true);
+  };
 
   const handleUpload = (file) => {
     setUpload(file);
-    setStatus("Applied"); // Once the document is uploaeded, status becomes "Applied"
+    setAppStatus("Applied");
+  };
+
+  const handleRounds = () => {
+    setSelectedProject(null);
+    setShowApplication(false);
   };
 
   return (
@@ -26,18 +37,34 @@ function App() {
       <h1> 
         Student Dashboard
       </h1>
+
+      {/* show rounds when no project has been selected */}
       <h2> Round Page </h2>
+      {!selectedProject && (<RoundPage viewProject={handleViewProject} />)}
+    
+      {/* show project details */}
+      {selectedProject && !showApplication && (
+        <ProjectPage
+          project={selectedProject}
+          onApply={handleApply}
+          onBack={handleRounds}
+          />
+      )}
 
-      <RoundPage rounds={rounds}/>
+      {/* show application page */}
+      {selectedProject && showApplication && (
+        <div>
+          <button onClick={() => setShowApplication(false)}>
+            Back to Project
+          </button>
 
-      <h2>Application Status</h2>
-      <ApplicationStatus status={status}/>
+          <h2> Apply for {selectedProject.title} </h2>
+          <UploadResume applicationUploaded={handleUpload} />
 
-      <div>
-        <UploadResume applicationUploaded={handleUpload}/>
-      </div>
-
-      <h2> Preference Page </h2>
+          <ApplicationStatus status={appStatus} />
+        </div>
+      )}
+      
       <PreferencePage></PreferencePage>
     </div>
   );
