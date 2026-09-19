@@ -18,10 +18,10 @@ const validationSchemas = {
         ID: joi.number().required(),
     }),
     getProjectSchema: joi.object({
-        id: joi.string().required(),
+        ID: joi.string().required(),
     }),
     getProjectsSchema: joi.object({
-        roundNum: joi.number().required(),
+        round: joi.number().required(),
     }),
 };
 
@@ -72,8 +72,15 @@ student.get('/project/:ID', validateParameters(validationSchemas.getProjectSchem
         if (user.Group !== 0) {
             const group = await Group.findOne({ GroupNumber: user.Group }).lean();
 
-            if (group.Project !== project.ID) {
+            if (group === null) {
                 delete project['ClientEmail'];
+            } 
+            else {
+                if (group.Project !== project.ID ||
+                    group.Confirmed !== 1)
+                {
+                    delete project['ClientEmail'];
+                }
             }
         } else {
             delete project['ClientEmail'];
@@ -89,10 +96,10 @@ student.get('/projects/:round', validateParameters(validationSchemas.getProjectS
     const round = await Round.findOne({ RoundNumber: req.params.round }).lean();
 
     if (round === null) {
-        res.sendStatus(500);
+        res.sendStatus(404);
     }
     else if (projects.length === 0) {
-        res.sendStatus(404);
+        res.status(200).json(projects);
     }
     else {
         const decodedToken = jwt.verify(req.cookies.token, process.env.WEB_TOKEN_KEY);
@@ -111,9 +118,17 @@ student.get('/projects/:round', validateParameters(validationSchemas.getProjectS
 
             if (user.Group === 0) {
                 delete project['ClientEmail'];
-            } else {
-                if (group.Project !== project.ID) {
+            } 
+            else {
+                if (group === null) {
                     delete project['ClientEmail'];
+                } 
+                else {
+                    if (group.Project !== project.ID ||
+                        group.Confirmed !== 1)
+                    {
+                        delete project['ClientEmail'];
+                    }
                 }
             }
         });
