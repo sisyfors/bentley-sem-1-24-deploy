@@ -1,7 +1,11 @@
 /* UC add student list via CSV */
+import './AddStudents.css'
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-function StudentList() {
+function AddStudents() {
+    const navigate = useNavigate();
+    
     const [studentList, setStudentList] = useState({
         document: null
     });
@@ -27,6 +31,7 @@ function StudentList() {
         console.log("Confirm button clicked");
         console.log("selected file: ", studentList.document)
         alert("Student List uploaded successfully!");
+        navigate("/ucdashboard/isad3000/students");
  
         /* send CSV file to the backend and store in the database
         const saveData = new FormData();
@@ -57,27 +62,35 @@ function StudentList() {
     };
 
     return(
-        <div className="form-container">
-            <div className="form-box">
-                <form onSubmit={handleSubmit}>
+        <div className="studentlist-container">
+              <h1> 
+                Add Student List
+              </h1>
+        
+              <div>
+                <div className="form-container">
+                    <div className="form-box">
+                        <form onSubmit={handleSubmit}>
             
-                    <label> Upload Student List </label>    
-                    <input
-                        type="file"
-                        name="document"
-                        accept=".csv"
-                        onChange={inputChanges}
-                        required
-                    />
+                            <label> Upload Student List </label>    
+                            <input
+                                type="file"
+                                name="document"
+                                accept=".csv"
+                                onChange={inputChanges}
+                                required
+                            />
 
-                    <button type="submit">
-                        Confirm
-                    </button>    
-                </form>
-            </div>
+                            <button type="submit">
+                                Confirm
+                            </button>
+                        </form>
+                    </div>
+                </div>
+              </div>
         </div>
     )
 
 }
 
-export default StudentList;
+export default AddStudents;

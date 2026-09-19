@@ -1,3 +1,4 @@
+import './DownloadApplications.css'
 import { useState } from "react";
 
 function DownloadApplications () {
@@ -60,26 +61,32 @@ function DownloadApplications () {
     };
 
     return (
-        <div className="form-container">
-            <div className="top-row">
-                <select 
-                    value={project}
-                    onChange={inputChanges}
-                >
-                    
-                    <option value=""> Select an option </option>
-                    <option value="project1"> Round 1 </option>
-                    <option value="project2"> Round 2 </option>
-                    <option value="project3"> Round 3 </option>
-                </select>
+        <div className="downloadapplications-container">
+            <h1> 
+                Download Applications
+            </h1>
 
-                <button 
-                    className="download-all"
-                    onClick={handleDownloadAll}
-                    disabled={!project}>
-                    Download All
-                </button>
-            </div>
+            <div>
+                <div className="form-container">
+                    <div className="top-row">
+                        <select 
+                            value={project}
+                            onChange={inputChanges}
+                        >
+                    
+                            <option value=""> Select an option </option>
+                            <option value="project1"> Round 1 </option>
+                            <option value="project2"> Round 2 </option>
+                            <option value="project3"> Round 3 </option>
+                        </select>
+
+                    <button 
+                        className="download-all"
+                        onClick={handleDownloadAll}
+                        disabled={!project}>
+                        Download All
+                    </button>
+                </div>
 
             {project && (
                 <div className="student-list">
@@ -96,6 +103,8 @@ function DownloadApplications () {
                 </div>
 
             )}
+        </div>
+            </div>
         </div>
     )
 }

@@ -1,8 +1,28 @@
-/* Edit or Remove Students */
+import "./StudentList.css";
+import logo from "./logo.webp";
+import Dropdown from "./Dropdown";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-function ManageStudents() {
-    const [student, setStudents] = useState([
+function StudentList() {
+  const navigate = useNavigate();
+
+  const sidebar = [
+    {
+      name: "Institution Page",
+      path: "/ucdashboard/institution"
+    },
+    {
+      name: "Units",
+      path: "/ucdashboard"
+    },
+    {
+      name: "Settings",
+      path: "/ucdashboard/settings"
+    }
+  ];
+
+  const [student, setStudents] = useState([
         {
             id: 1, 
             name: "Josiah Barnes",
@@ -81,11 +101,87 @@ function ManageStudents() {
             prevStudents.filter(student => student.id !== id));
         setPendingDelete(null);
     };
-    
-    return (
-        <div className="form-container">
-            <div className="form-box">
-                <h3>Student Details</h3>
+
+  return (
+    <div className="isad3000-container">
+
+      {/* Sidebar */}
+      <aside className="sidebar">
+        <h2>UC Dashboard</h2>
+
+        <nav>
+          <ul>
+            {sidebar.map((item) => (
+              <li
+                key={item.name}
+                onClick={() => navigate(item.path)}
+              >
+                {item.name}
+              </li>
+            ))}
+
+            <Dropdown
+                          unitName="ISAD3000"
+                          items={[
+                            {
+                              name: "Announcements",
+                              path: "/ucdashboard/isad3000/announcements"
+                            },
+                            {
+                              name: "Student List",
+                              path: "/ucdashboard/isad3000/students"
+                            },
+                            {
+                              name: "Group Allocation",
+                              path: "/ucdashboard/isad3000/groups"
+                            },
+                          ]}
+            />
+          </ul>
+        </nav>
+      </aside>
+
+      {/* Logo */}
+      <img
+        src={logo}
+        alt="Logo"
+        className="top-logo"
+      />
+
+      {/* Main Content */}
+      <main className="main-content">
+
+        <section className="unit-name">
+          <h1>Capstone Project 1 | ISAD3000</h1>
+          <p>Student List and Group Allocation</p>
+        </section>
+
+        <div className="studentlist-box">
+
+          <div className="studentlist-header">
+
+            <h2>Student Details</h2>
+
+            <button
+              className="add-student-btn"
+              onClick={() => {
+                navigate("/ucdashboard/isad3000/addstudent");
+              }}
+            >
+              + Add Student (Manual)
+            </button>
+
+            <button
+              className="add-student-btn"
+              onClick={() => {
+                navigate("/ucdashboard/isad3000/addstudents");
+              }}
+            >
+              + Add Students (CSV)
+            </button>
+          </div>
+
+          <div className="form-box">
                 {student.map((student) => {
                     const isEditing = editingId === student.id;
                     const isDeleting = pendingDelete === student.id;
@@ -134,10 +230,6 @@ function ManageStudents() {
                         ) : isDeleting ? (
                             <>
                                 <div className="delete-container">
-                                    <h4>{student.name}</h4>
-                                    <h4>{student.email}</h4>
-                                    <h4>{student.course}</h4>
-                                    <h4>CWA: {student.cwa}</h4>
                                     <div className="confirm-delete-container">
                                         <p>
                                             Are you sure you want to remove{" "}
@@ -159,11 +251,13 @@ function ManageStudents() {
                         ) : (
                             <>
                                 <div className="student-details">
+                                    <div className="student-detail-text">
                                     <h4>{student.name}</h4>
                                     <h4>{student.email}</h4>
                                     <h4>{student.course}</h4>
                                     <h4>CWA: {student.cwa}</h4>
-
+                                    </div>
+                                    <div>
                                     <button onClick={() => handleEdit(student)}
                                         title="Edit student">
                                         Edit
@@ -172,6 +266,7 @@ function ManageStudents() {
                                         title="Remove student">
                                         Remove
                                     </button>
+                                    </div>
                                 </div>
                             </>
                         )}
@@ -180,9 +275,13 @@ function ManageStudents() {
 
                     );
                 })}
-                </div> 
-            </div>
-        );
+                </div>
+        </div>
+
+      </main>
+
+    </div>
+  );
 }
 
-export default ManageStudents;
+export default StudentList;
