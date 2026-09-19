@@ -61,7 +61,6 @@ student.get('/project/:ID', validateParameters(validationSchemas.getProjectSchem
     if (project === null) {
         res.sendStatus(404);
     } else {
-        delete project['ID'];
         delete project['IntendedSize'];
 
         const decodedToken = jwt.verify(req.cookies.token, process.env.WEB_TOKEN_KEY);
@@ -86,12 +85,12 @@ student.get('/project/:ID', validateParameters(validationSchemas.getProjectSchem
             delete project['ClientEmail'];
         }
 
-        console.log(project);
+        delete project['ID'];
         res.status(200).json(project);
     }
 });
 
-student.get('/projects/:round', validateParameters(validationSchemas.getProjectSchema), verifyStudentSession, async (req, res) => {
+student.get('/projects/:round', validateParameters(validationSchemas.getProjectsSchema), verifyStudentSession, async (req, res) => {
     const projects = await Project.find({ Round: req.params.round }).lean();
     const round = await Round.findOne({ RoundNumber: req.params.round }).lean();
 
@@ -104,7 +103,7 @@ student.get('/projects/:round', validateParameters(validationSchemas.getProjectS
     else {
         const decodedToken = jwt.verify(req.cookies.token, process.env.WEB_TOKEN_KEY);
         const username = decodedToken.username;
-        const user = await UCAccount.findOne({Username: username}).lean();
+        const user = await CapstoneStudent.findOne({Username: username}).lean();
 
         let group;
 
@@ -113,7 +112,6 @@ student.get('/projects/:round', validateParameters(validationSchemas.getProjectS
         }
 
         projects.forEach((project) => {
-            delete project['ID'];
             delete project['IntendedSize'];
 
             if (user.Group === 0) {
@@ -131,6 +129,8 @@ student.get('/projects/:round', validateParameters(validationSchemas.getProjectS
                     }
                 }
             }
+
+            delete project['ID'];
         });
 
         res.status(200).json(projects);
