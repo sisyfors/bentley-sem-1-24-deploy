@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 require("dotenv").config();
 
 // @ts-ignore
-mongoose.connect(process.env.MONGODB_STRING, {dbName: 'ccp24'});
+mongoose.connect(process.env.MONGODB_STRING, {dbName: 'test'});
 
 const {
     CapstoneStudent

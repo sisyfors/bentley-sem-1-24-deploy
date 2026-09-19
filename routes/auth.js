@@ -1,14 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const randomstring = require('randomstring');
-const mongoose = require('mongoose');
 const argon2 = require('argon2');
 const jwt = require('jsonwebtoken');
 const joi = require('joi');
 const Resend = require('resend');
 require("dotenv").config();
 
-mongoose.connect(process.env.MONGODB_STRING, {dbName: 'ccp24'});
 const resend = new Resend.Resend(process.env.RESEND_API_KEY);
 
 const {
