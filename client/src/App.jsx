@@ -3,6 +3,7 @@ import './App.css'
 import UC_Dashboard from './pages/UC_Dashboard'
 import WORK3008 from "./pages/WORK3008";
 import ISAD3000 from "./pages/ISAD3000";
+import GroupAllocation from "./pages/GroupAllocation";
 
 import { Routes, Route, Link } from "react-router-dom"
 
@@ -59,10 +60,9 @@ function App() {
       <Route path="/" element={<Home />} />
       <Route path="/ucdashboard" element={<UC_Dashboard />} />
       <Route path="/ucdashboard/work3008" element={<WORK3008 />} />
-      <Route
-        path="/ucdashboard/isad3000"
-        element={<ISAD3000 />}
+      <Route path="/ucdashboard/isad3000" element={<ISAD3000 />}
       />
+      <Route path="/ucdashboard/isad3000/groups" element={<GroupAllocation />} />
     </Routes>
   );
 } 
