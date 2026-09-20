@@ -7,6 +7,7 @@ import StudentList  from './pages/StudentList';
 import DownloadApplications from './pages/DownloadApplications'
 import AddStudents  from './pages/AddStudents';
 import AddStudent  from './pages/AddStudent';
+import GroupAllocation from './pages/GroupAllocation';
 
 import { Routes, Route, Link } from "react-router-dom"
 
