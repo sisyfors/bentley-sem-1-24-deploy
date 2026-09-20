@@ -68,7 +68,7 @@ const majors = [
     "Information Technology"
 ];
 
-
+/* PR and commit test */
 
 function GroupAllocation() {
     const [students] = useState(initialStudents);
