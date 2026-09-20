@@ -71,6 +71,7 @@ function App() {
         path="/ucdashboard/isad3000"
         element={<ISAD3000 />}
       />
+      <Route path="/ucdashboard/isad3000/groups" element={<GroupAllocation />} />
     </Routes>
   );
 } 
