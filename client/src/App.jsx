@@ -60,8 +60,7 @@ function App() {
       <Route path="/" element={<Home />} />
       <Route path="/ucdashboard" element={<UC_Dashboard />} />
       <Route path="/ucdashboard/work3008" element={<WORK3008 />} />
-      <Route path="/ucdashboard/isad3000" element={<ISAD3000 />}
-      />
+      <Route path="/ucdashboard/isad3000" element={<ISAD3000 />} />
       <Route path="/ucdashboard/isad3000/groups" element={<GroupAllocation />} />
     </Routes>
   );
