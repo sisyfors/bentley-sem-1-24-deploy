@@ -67,10 +67,8 @@ function App() {
       <Route path="/ucdashboard/isad3000/addstudent" element={<AddStudent />} />
       <Route path="/ucdashboard/work3008" element={<WORK3008 />} />
       <Route path="/ucdashboard/work3008/applications" element={<DownloadApplications />} />
-      <Route
-        path="/ucdashboard/isad3000"
-        element={<ISAD3000 />}
-      />
+      <Route path="/ucdashboard/isad3000" element={<ISAD3000 />} />
+      <Route path="/ucdashboard/isad3000" element={<ISAD3000 />} />
       <Route path="/ucdashboard/isad3000/groups" element={<GroupAllocation />} />
     </Routes>
   );
