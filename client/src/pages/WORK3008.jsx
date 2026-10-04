@@ -1,6 +1,4 @@
 import "./WORK3008.css";
-import logo from "./logo.webp";
-import Dropdown from "./Dropdown";
 import Projects from "./Projects";
 import "./Projects.css";
 import { useNavigate } from "react-router-dom";
@@ -11,18 +9,23 @@ function WORK3008() {
   const navigate = useNavigate();
 
   const sidebar = [
-    {
-      name: "Institution Page",
-      path: "/ucdashboard/institution"
-    },
+
     {
       name: "Units",
       path: "/ucdashboard"
     },
     {
-      name: "Settings",
-      path: "/ucdashboard/settings"
-    }
+      name: "Rounds",
+      path: "/ucdashboard/rounds"
+    },
+    {
+      name: "Group Allocation",
+      path: "/ucdashboard/groups"
+    },
+    {
+      name: "Download Applications",
+      path: "/ucdashboard/rounds/applications"
+    },
   ];
 
   const [rounds, setRounds] = useState([]);
@@ -95,37 +98,16 @@ function WORK3008() {
               </li>
             ))}
 
-            <Dropdown
-              unitName="WORK3008"
-              items={[
-                {
-                  name: "Announcements",
-                  path: "/ucdashboard/work3008/announcements"
-                },
-                {
-                  name: "Round Setup",
-                  path: "/ucdashboard/work3008/rounds"
-                },
-                {
-                  name: "Download Applications",
-                  path: "/ucdashboard/work3008/applications"
-                },
-              ]}
-            />
           </ul>
         </nav>
       </aside>
 
-      <img
-        src={logo}
-        alt="Logo"
-        className="top-logo"
-      />
+
 
       <main className="main-content">
 
         <section className="unit-name">
-          <h1>Work Based Project | WORK3008</h1>
+          <h1>Rounds setup</h1>
           <p></p>
         </section>
 
@@ -214,8 +196,10 @@ function WORK3008() {
                   )}
 
                 </div>
+                
 
-                <Projects />
+                {!isRoundExpired(round.endDate) && round.status !== "Closed" && (
+                <Projects />)}
 
               </div>
             ))}

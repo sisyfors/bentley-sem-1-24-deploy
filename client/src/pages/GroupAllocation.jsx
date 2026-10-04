@@ -199,12 +199,18 @@ function GroupAllocation() {
                 </div>
 
                 {groups.length > 0 && (
-                    <button
-                        className="reset-button"
-                        onClick={resetAllocation}
-                    >
-                        Reset Allocation
-                    </button>
+                    <div className="header-buttons">
+                        <button
+                            className="reset-button"
+                            onClick={resetAllocation}
+                        >
+                            Reset Allocation
+                        </button>
+
+                        <button className="save-button">
+                            Save Changes
+                        </button>
+                    </div>
                 )}
             </div>
 
